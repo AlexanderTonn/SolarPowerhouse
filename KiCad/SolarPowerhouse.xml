@@ -1,0 +1,1158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="E">
+  <design>
+    <source>/Users/alexandertonn/Library/CloudStorage/OneDrive-Persönlich/1_Arduino/4_KiCad/SolarPowerhouse/SolarPowerhouse/SolarPowerhouse.kicad_sch</source>
+    <date>Samstag, 04. MÃ¤rz 2023 um 19:19:26</date>
+    <tool>Eeschema (6.0.9-0)</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>SolarPowerhouse.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="2" name="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>Gesamtanlage.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="3" name="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>pwSupply5.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+    <sheet number="4" name="/Solarmodule/" tstamps="/9aa18fc7-a728-4e5b-a34c-9c2109c71666/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>doc1.kicad_sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+        <comment number="5" value=""/>
+        <comment number="6" value=""/>
+        <comment number="7" value=""/>
+        <comment number="8" value=""/>
+        <comment number="9" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="BT1">
+      <value>120Ah</value>
+      <libsource lib="Device" part="Battery_Cell" description="Single-cell battery"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>6b9ac0c4-9202-4e6f-9e4c-a30517b08db1</tstamps>
+    </comp>
+    <comp ref="F1">
+      <value>6A gR</value>
+      <datasheet>https://www.schutzschalter-online.de/produkte/sicherungssysteme-lasttrennschalter-sicherungen-sicherungshalter/lasttrennschalter-fuer-zylindrische-sicherungen/opvp10-lasttrennschalter-fuer-10x38mm-sicherungen.html</datasheet>
+      <libsource lib="AlexLib" part="Sicherungstrennschalter" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>6aacac9b-7b28-4cfd-9daa-9cb7f8ba55b7</tstamps>
+    </comp>
+    <comp ref="F2">
+      <value>6A gR</value>
+      <datasheet>https://www.schutzschalter-online.de/produkte/sicherungssysteme-lasttrennschalter-sicherungen-sicherungshalter/lasttrennschalter-fuer-zylindrische-sicherungen/opvp10-lasttrennschalter-fuer-10x38mm-sicherungen.html</datasheet>
+      <libsource lib="AlexLib" part="Sicherungstrennschalter" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>a77885ea-ee91-46e0-a880-d8c57610a5d7</tstamps>
+    </comp>
+    <comp ref="F3">
+      <value>6A gR</value>
+      <datasheet>https://www.schutzschalter-online.de/produkte/sicherungssysteme-lasttrennschalter-sicherungen-sicherungshalter/lasttrennschalter-fuer-zylindrische-sicherungen/opvp10-lasttrennschalter-fuer-10x38mm-sicherungen.html</datasheet>
+      <libsource lib="AlexLib" part="Sicherungstrennschalter" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>bd90ce41-6af8-4348-bacb-84eee7157328</tstamps>
+    </comp>
+    <comp ref="F4">
+      <value>C1,6A</value>
+      <datasheet>https://www.conrad.de/de/p/chint-179647-nb1-63-2p-b25-6ka-db-leitungsschutzschalter-2polig-25-a-240-v-415-v-2525059.html</datasheet>
+      <libsource lib="Device" part="CircuitBreaker_2P" description="Double pole circuit breaker"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>ca527e56-7189-48aa-81d8-debdf2dcdba6</tstamps>
+    </comp>
+    <comp ref="F5">
+      <value>B25A</value>
+      <datasheet>https://www.conrad.de/de/p/chint-179647-nb1-63-2p-b25-6ka-db-leitungsschutzschalter-2polig-25-a-240-v-415-v-2525059.html</datasheet>
+      <libsource lib="Device" part="CircuitBreaker_2P" description="Double pole circuit breaker"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>a5544995-2f7f-476a-bb5a-bb694af522cb</tstamps>
+    </comp>
+    <comp ref="F6">
+      <value>B25A</value>
+      <libsource lib="Device" part="CircuitBreaker_1P" description="Single pole circuit breaker"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>65016f96-1a50-4f04-a6ba-d876a7a3e57a</tstamps>
+    </comp>
+    <comp ref="J9">
+      <value>Conn_WallSocket_Earth</value>
+      <libsource lib="Connector" part="Conn_WallSocket_Earth" description="3-pin german wall socket, with Earth wire (110VAC, 220VAC)"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>c746b333-0de7-47a4-9614-7e68d20ed89c</tstamps>
+    </comp>
+    <comp ref="K1">
+      <value>power_contactor</value>
+      <libsource lib="AlexLib" part="power_contactor" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>41875f39-5ec3-4a22-a540-f7e16f2bf935</tstamps>
+    </comp>
+    <comp ref="K2">
+      <value>power_contactor</value>
+      <libsource lib="AlexLib" part="power_contactor" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>e93f5fde-de2c-4b97-ab20-29c1a5f79ee5</tstamps>
+    </comp>
+    <comp ref="K3">
+      <value>power_contactor</value>
+      <libsource lib="AlexLib" part="power_contactor" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>191bf078-2140-4475-88cc-392f7661a6fc</tstamps>
+    </comp>
+    <comp ref="SC1">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>3d8d4b16-93d2-4e69-9cf1-3d0d5cdbf758</tstamps>
+    </comp>
+    <comp ref="SC2">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>f749f9f6-e5c5-4107-a38a-8275164c53ec</tstamps>
+    </comp>
+    <comp ref="SC3">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>e55f22bb-e090-465e-a74e-26701ccd975d</tstamps>
+    </comp>
+    <comp ref="SC4">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>da63b6e5-deaa-4887-8cf1-00b61a57132c</tstamps>
+    </comp>
+    <comp ref="SC5">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>10f3e523-918b-4a00-b4fb-af5817d858da</tstamps>
+    </comp>
+    <comp ref="SC6">
+      <value>Solar_Cell</value>
+      <libsource lib="Device" part="Solar_Cell" description="Single solar cell"/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>7febe0d3-aa1b-40d1-a9bc-7e51cf0f4339</tstamps>
+    </comp>
+    <comp ref="T1">
+      <value>Siungle_Mikroinverter</value>
+      <libsource lib="AlexLib" part="Siungle_Mikroinverter" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>315c4c22-8ae4-4907-865e-330d46e15286</tstamps>
+    </comp>
+    <comp ref="T2">
+      <value>SR-ML2440</value>
+      <datasheet>https://greenakku.de/Ladegeraete/Solarladeregler/MPPT-Solarladeregler/MPPT-Solarladeregler-SR-ML2440-40A-12-24V::684.html</datasheet>
+      <libsource lib="AlexanderTonnLib" part="SR-ML2440" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>e94fa8e5-d5b0-4040-8d35-18f21360ecfe</tstamps>
+    </comp>
+    <comp ref="X1+1">
+      <value>Reihenklemme_2-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_2-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>7f048014-beb3-4b06-afca-4aec3456ae4c</tstamps>
+    </comp>
+    <comp ref="X2+1">
+      <value>Reihenklemme_4-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_4-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>34189bf3-8001-4ba1-967a-96b87ccd2992</tstamps>
+    </comp>
+    <comp ref="X3-1">
+      <value>Reihenklemme_4-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_4-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>cda3a00c-4d74-4035-9cd8-fc4adffc6d31</tstamps>
+    </comp>
+    <comp ref="X4">
+      <value>Reihenklemme_3-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_3-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>b76d5748-0741-431b-935e-82d2e879b711</tstamps>
+    </comp>
+    <comp ref="X5+1">
+      <value>Reihenklemme_4-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_4-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>c5e14fd5-fe37-478b-b671-2474e16a7a28</tstamps>
+    </comp>
+    <comp ref="X6-1">
+      <value>Reihenklemme_4-pol</value>
+      <libsource lib="AlexLib" part="Reihenklemme_4-pol" description=""/>
+      <property name="Sheetname" value="Gesamtanlage"/>
+      <property name="Sheetfile" value="Gesamtanlage.kicad_sch"/>
+      <sheetpath names="/Gesamtanlage/" tstamps="/f739ce40-0704-44b7-80b0-e30e642b6d39/"/>
+      <tstamps>ff650ee7-3e1d-4c65-a0f4-07c314bf40f2</tstamps>
+    </comp>
+    <comp ref="C1">
+      <value>1m</value>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>f686c1a3-e9bd-4054-b99d-9935c4ebbaf2</tstamps>
+    </comp>
+    <comp ref="C2">
+      <value>220n</value>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>c739e260-a0f2-418e-91b4-35e647265115</tstamps>
+    </comp>
+    <comp ref="C3">
+      <value>100n</value>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>a6e8d4b6-eebc-4198-bbe4-1139f76f4be4</tstamps>
+    </comp>
+    <comp ref="C4">
+      <value>1m</value>
+      <libsource lib="Device" part="C_Polarized" description="Polarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>20228355-201b-441f-b03f-4618bcdc6469</tstamps>
+    </comp>
+    <comp ref="C5">
+      <value>220n</value>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>25c685d7-bfd1-47fa-b819-0801e83496f5</tstamps>
+    </comp>
+    <comp ref="C6">
+      <value>100n</value>
+      <libsource lib="Device" part="C" description="Unpolarized capacitor"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>7ca8970b-2d98-4ef4-8c42-bdd46e6dafcc</tstamps>
+    </comp>
+    <comp ref="D1">
+      <value>LED</value>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>3e0ded88-a679-478f-950c-0a6e0164057d</tstamps>
+    </comp>
+    <comp ref="D3">
+      <value>LED</value>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>8effc288-a1eb-41b8-847b-6e59106da774</tstamps>
+    </comp>
+    <comp ref="D4">
+      <value>LED</value>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>f37d2710-cd25-41e3-9424-2f5249428668</tstamps>
+    </comp>
+    <comp ref="D5">
+      <value>LED</value>
+      <libsource lib="Device" part="LED" description="Light emitting diode"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>5d16eaa8-49f0-4502-b1a5-63b1f6d1e36e</tstamps>
+    </comp>
+    <comp ref="J1">
+      <value>Screw_Terminal_01x02</value>
+      <libsource lib="Connector" part="Screw_Terminal_01x02" description="Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>7854d644-85d6-4c7f-82be-2f39b4d6b3bf</tstamps>
+    </comp>
+    <comp ref="J2">
+      <value>Conn_02x02_Odd_Even</value>
+      <libsource lib="Connector_Generic" part="Conn_02x02_Odd_Even" description="Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>22a7eea0-62e4-4418-947a-6dfdedc658e8</tstamps>
+    </comp>
+    <comp ref="J3">
+      <value>USB_A</value>
+      <datasheet> ~</datasheet>
+      <libsource lib="Connector" part="USB_A" description="USB Type A connector"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>33f1505d-6db8-46b7-9f73-821399140f4a</tstamps>
+    </comp>
+    <comp ref="J4">
+      <value>Conn_02x02_Odd_Even</value>
+      <libsource lib="Connector_Generic" part="Conn_02x02_Odd_Even" description="Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>1d5773e0-9370-4959-88b0-e84c0b246cf7</tstamps>
+    </comp>
+    <comp ref="J5">
+      <value>USB_A</value>
+      <datasheet> ~</datasheet>
+      <libsource lib="Connector" part="USB_A" description="USB Type A connector"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>7ddfdad7-42e0-43af-9c5d-72f6e11a6d7c</tstamps>
+    </comp>
+    <comp ref="R1">
+      <value>330</value>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>0d8b3360-dd0e-4be9-9f15-091de3839ab5</tstamps>
+    </comp>
+    <comp ref="R2">
+      <value>330</value>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>c021da31-efed-46f1-bb60-a150606cb850</tstamps>
+    </comp>
+    <comp ref="R3">
+      <value>330</value>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>15cf41a5-94b8-4f95-a141-56696bebb359</tstamps>
+    </comp>
+    <comp ref="R4">
+      <value>330</value>
+      <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>abb9d9a0-1872-4817-82dc-d990952e8b10</tstamps>
+    </comp>
+    <comp ref="U1">
+      <value>L78S05</value>
+      <datasheet>https://www.reichelt.de/spannungsregler-fest-5-v-2a-to-220--a-78s05-p23481.html?CCOUNTRY=445&amp;LANGUAGE=de</datasheet>
+      <libsource lib="Regulator_Linear" part="L7805" description="Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>a1248547-1bf5-4ac8-a55b-964b1c442231</tstamps>
+    </comp>
+    <comp ref="U2">
+      <value>L78S05</value>
+      <datasheet>https://www.reichelt.de/spannungsregler-fest-5-v-2a-to-220--a-78s05-p23481.html?CCOUNTRY=445&amp;LANGUAGE=de</datasheet>
+      <libsource lib="Regulator_Linear" part="L7805" description="Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252"/>
+      <property name="Sheetname" value="5V Stromversorgung"/>
+      <property name="Sheetfile" value="pwSupply5.kicad_sch"/>
+      <sheetpath names="/5V Stromversorgung/" tstamps="/00de15c1-7851-4a2c-8d56-e8e879166b38/"/>
+      <tstamps>a69009fa-4c3f-43ab-adcb-1e1a8e174393</tstamps>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="AlexLib" part="Reihenklemme_2-pol">
+      <fields>
+        <field name="Reference">X</field>
+        <field name="Value">Reihenklemme_2-pol</field>
+      </fields>
+      <pins>
+        <pin num="1a" name="" type="passive"/>
+        <pin num="1b" name="" type="passive"/>
+        <pin num="2a" name="" type="passive"/>
+        <pin num="2b" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexLib" part="Reihenklemme_3-pol">
+      <fields>
+        <field name="Reference">X</field>
+        <field name="Value">Reihenklemme_3-pol</field>
+      </fields>
+      <pins>
+        <pin num="1a" name="" type="passive"/>
+        <pin num="1b" name="" type="passive"/>
+        <pin num="2a" name="" type="passive"/>
+        <pin num="2b" name="" type="passive"/>
+        <pin num="3a" name="" type="passive"/>
+        <pin num="3b" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexLib" part="Reihenklemme_4-pol">
+      <fields>
+        <field name="Reference">X2+</field>
+        <field name="Value">Reihenklemme_4-pol</field>
+      </fields>
+      <pins>
+        <pin num="1a" name="" type="passive"/>
+        <pin num="1b" name="" type="passive"/>
+        <pin num="2a" name="" type="passive"/>
+        <pin num="2b" name="" type="passive"/>
+        <pin num="3a" name="" type="passive"/>
+        <pin num="3b" name="" type="passive"/>
+        <pin num="4b" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexLib" part="Sicherungstrennschalter">
+      <fields>
+        <field name="Reference">F</field>
+        <field name="Value">Sicherungstrennschalter</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexLib" part="Siungle_Mikroinverter">
+      <fields>
+        <field name="Reference">T</field>
+        <field name="Value">Siungle_Mikroinverter</field>
+      </fields>
+      <pins>
+        <pin num="" name="230V_In-L" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexLib" part="power_contactor">
+      <fields>
+        <field name="Reference">K</field>
+        <field name="Value">power_contactor</field>
+      </fields>
+      <pins>
+        <pin num="A1" name="" type="passive"/>
+        <pin num="A2" name="" type="passive"/>
+        <pin num="L1" name="" type="passive"/>
+        <pin num="L2" name="" type="passive"/>
+        <pin num="L3" name="" type="passive"/>
+        <pin num="T1" name="" type="passive"/>
+        <pin num="T2" name="" type="passive"/>
+        <pin num="T3" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="AlexanderTonnLib" part="SR-ML2440">
+      <fields>
+        <field name="Reference">T</field>
+        <field name="Value">SR-ML2440</field>
+      </fields>
+      <pins>
+        <pin num="8" name="PV_Panel_+" type="power_in"/>
+        <pin num="9" name="PV_Panel_-" type="power_in"/>
+        <pin num="10" name="Batterie_+" type="power_out"/>
+        <pin num="11" name="Batterie_-" type="power_out"/>
+        <pin num="12" name="Last_+" type="power_out"/>
+        <pin num="13" name="Last_-" type="power_out"/>
+        <pin num="14" name="Temperatur" type="input"/>
+        <pin num="15" name="Modbus_RS232" type="bidirectional"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_WallSocket_Earth">
+      <description>3-pin german wall socket, with Earth wire (110VAC, 220VAC)</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_WallSocket_Earth</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="AC_P" type="power_in"/>
+        <pin num="2" name="AC_N" type="power_in"/>
+        <pin num="3" name="EARTH" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Screw_Terminal_01x02">
+      <description>Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TerminalBlock*:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Screw_Terminal_01x02</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="USB_A">
+      <description>USB Type A connector</description>
+      <docs> ~</docs>
+      <footprints>
+        <fp>USB*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">USB_A</field>
+        <field name="Datasheet"> ~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="VBUS" type="power_in"/>
+        <pin num="2" name="D-" type="bidirectional"/>
+        <pin num="3" name="D+" type="bidirectional"/>
+        <pin num="4" name="GND" type="power_in"/>
+        <pin num="5" name="Shield" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_02x02_Odd_Even">
+      <description>Generic connector, double row, 02x02, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_2x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_02x02_Odd_Even</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Battery_Cell">
+      <description>Single-cell battery</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">BT</field>
+        <field name="Value">Battery_Cell</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C">
+      <description>Unpolarized capacitor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="C_Polarized">
+      <description>Polarized capacitor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C_Polarized</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="CircuitBreaker_1P">
+      <description>Single pole circuit breaker</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">CB</field>
+        <field name="Value">CircuitBreaker_1P</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="CircuitBreaker_2P">
+      <description>Double pole circuit breaker</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">CB</field>
+        <field name="Value">CircuitBreaker_2P</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+        <pin num="3" name="" type="passive"/>
+        <pin num="4" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="LED">
+      <description>Light emitting diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>LED*</fp>
+        <fp>LED_SMD:*</fp>
+        <fp>LED_THT:*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">LED</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="R_Small">
+      <description>Resistor, small symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R_Small</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="" type="passive"/>
+        <pin num="2" name="" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="Solar_Cell">
+      <description>Single solar cell</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SC</field>
+        <field name="Value">Solar_Cell</field>
+        <field name="Datasheet">~</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Regulator_Linear" part="L7805">
+      <description>Positive 1.5A 35V Linear Regulator, Fixed Output 5V, TO-220/TO-263/TO-252</description>
+      <docs>http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf</docs>
+      <footprints>
+        <fp>TO?252*</fp>
+        <fp>TO?263*</fp>
+        <fp>TO?220*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">L7805</field>
+        <field name="Datasheet">http://www.st.com/content/ccc/resource/technical/document/datasheet/41/4f/b3/b0/12/d4/47/88/CD00000444.pdf/files/CD00000444.pdf/jcr:content/translations/en.CD00000444.pdf</field>
+      </fields>
+      <pins>
+        <pin num="1" name="IN" type="power_in"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="OUT" type="power_out"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="AlexLib">
+      <uri>/Users/alexandertonn/Library/CloudStorage/OneDrive-Persönlich/1_Arduino/4_KiCad/Libs/AlexanderTonnLib.kicad_sym</uri>
+    </library>
+    <library logical="Connector">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Connector.kicad_sym</uri>
+    </library>
+    <library logical="Connector_Generic">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Connector_Generic.kicad_sym</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Device.kicad_sym</uri>
+    </library>
+    <library logical="Regulator_Linear">
+      <uri>/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols//Regulator_Linear.kicad_sym</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="24V-">
+      <node ref="K1" pin="A2" pintype="passive"/>
+      <node ref="K2" pin="A2" pintype="passive"/>
+    </net>
+    <net code="2" name="200W Versorgung+">
+      <node ref="T2" pin="12" pinfunction="Last_+" pintype="power_out"/>
+    </net>
+    <net code="3" name="200W Versorgung-">
+      <node ref="T2" pin="13" pinfunction="Last_-" pintype="power_out"/>
+    </net>
+    <net code="4" name="MPPT Ansteuerung">
+      <node ref="K2" pin="A1" pintype="passive"/>
+    </net>
+    <net code="5" name="Net-(BT1-Pad1)">
+      <node ref="BT1" pin="1" pinfunction="+" pintype="passive"/>
+      <node ref="F6" pin="2" pintype="passive"/>
+    </net>
+    <net code="6" name="Net-(C1-Pad1)">
+      <node ref="C1" pin="1" pintype="passive"/>
+      <node ref="C2" pin="1" pintype="passive"/>
+      <node ref="C4" pin="1" pintype="passive"/>
+      <node ref="C5" pin="1" pintype="passive"/>
+      <node ref="J1" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R1" pin="1" pintype="passive"/>
+      <node ref="R3" pin="1" pintype="passive"/>
+      <node ref="U1" pin="1" pinfunction="IN" pintype="power_in"/>
+      <node ref="U2" pin="1" pinfunction="IN" pintype="power_in"/>
+    </net>
+    <net code="7" name="Net-(C1-Pad2)">
+      <node ref="C1" pin="2" pintype="passive"/>
+      <node ref="C2" pin="2" pintype="passive"/>
+      <node ref="C3" pin="2" pintype="passive"/>
+      <node ref="C4" pin="2" pintype="passive"/>
+      <node ref="C5" pin="2" pintype="passive"/>
+      <node ref="C6" pin="2" pintype="passive"/>
+      <node ref="D1" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="D3" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="D4" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="D5" pin="1" pinfunction="K" pintype="passive"/>
+      <node ref="J1" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J2" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="J4" pin="3" pinfunction="Pin_3" pintype="passive"/>
+      <node ref="U1" pin="2" pinfunction="GND" pintype="power_in"/>
+      <node ref="U2" pin="2" pinfunction="GND" pintype="power_in"/>
+    </net>
+    <net code="8" name="Net-(C3-Pad1)">
+      <node ref="C3" pin="1" pintype="passive"/>
+      <node ref="J2" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R2" pin="1" pintype="passive"/>
+      <node ref="U1" pin="3" pinfunction="OUT" pintype="power_out"/>
+    </net>
+    <net code="9" name="Net-(C6-Pad1)">
+      <node ref="C6" pin="1" pintype="passive"/>
+      <node ref="J4" pin="1" pinfunction="Pin_1" pintype="passive"/>
+      <node ref="R4" pin="1" pintype="passive"/>
+      <node ref="U2" pin="3" pinfunction="OUT" pintype="power_out"/>
+    </net>
+    <net code="10" name="Net-(D1-Pad2)">
+      <node ref="D1" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R1" pin="2" pintype="passive"/>
+    </net>
+    <net code="11" name="Net-(D3-Pad2)">
+      <node ref="D3" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R2" pin="2" pintype="passive"/>
+    </net>
+    <net code="12" name="Net-(D4-Pad2)">
+      <node ref="D4" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R3" pin="2" pintype="passive"/>
+    </net>
+    <net code="13" name="Net-(D5-Pad2)">
+      <node ref="D5" pin="2" pinfunction="A" pintype="passive"/>
+      <node ref="R4" pin="2" pintype="passive"/>
+    </net>
+    <net code="14" name="Net-(F4-Pad2)">
+      <node ref="F4" pin="2" pintype="passive"/>
+      <node ref="K3" pin="L1" pintype="passive"/>
+    </net>
+    <net code="15" name="Net-(F4-Pad4)">
+      <node ref="F4" pin="4" pintype="passive"/>
+      <node ref="K3" pin="L2" pintype="passive"/>
+    </net>
+    <net code="16" name="Net-(J2-Pad2)">
+      <node ref="J2" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J3" pin="1" pinfunction="VBUS" pintype="power_in"/>
+    </net>
+    <net code="17" name="Net-(J2-Pad4)">
+      <node ref="J2" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="J3" pin="4" pinfunction="GND" pintype="power_in"/>
+    </net>
+    <net code="18" name="Net-(J4-Pad2)">
+      <node ref="J4" pin="2" pinfunction="Pin_2" pintype="passive"/>
+      <node ref="J5" pin="1" pinfunction="VBUS" pintype="power_in"/>
+    </net>
+    <net code="19" name="Net-(J4-Pad4)">
+      <node ref="J4" pin="4" pinfunction="Pin_4" pintype="passive"/>
+      <node ref="J5" pin="4" pinfunction="GND" pintype="power_in"/>
+    </net>
+    <net code="20" name="Net-(J9-Pad1)">
+      <node ref="J9" pin="1" pinfunction="AC_P" pintype="power_in"/>
+      <node ref="X4" pin="1a" pintype="passive"/>
+    </net>
+    <net code="21" name="Net-(J9-Pad2)">
+      <node ref="J9" pin="2" pinfunction="AC_N" pintype="power_in"/>
+      <node ref="X4" pin="2a" pintype="passive"/>
+    </net>
+    <net code="22" name="Net-(J9-Pad3)">
+      <node ref="J9" pin="3" pinfunction="EARTH" pintype="passive"/>
+      <node ref="X4" pin="3a" pintype="passive"/>
+    </net>
+    <net code="23" name="Net-(K1-PadL1)">
+      <node ref="K1" pin="L1" pintype="passive"/>
+      <node ref="K1" pin="L2" pintype="passive"/>
+    </net>
+    <net code="24" name="Net-(K1-PadL3)">
+      <node ref="K1" pin="L3" pintype="passive"/>
+      <node ref="T1" pin="" pinfunction="Solar+" pintype="input"/>
+    </net>
+    <net code="25" name="Net-(K1-PadT1)">
+      <node ref="K1" pin="T1" pintype="passive"/>
+      <node ref="X1+1" pin="1a" pintype="passive"/>
+    </net>
+    <net code="26" name="Net-(K1-PadT2)">
+      <node ref="K1" pin="T2" pintype="passive"/>
+      <node ref="K1" pin="T3" pintype="passive"/>
+    </net>
+    <net code="27" name="Net-(K2-PadL1)">
+      <node ref="K2" pin="L1" pintype="passive"/>
+      <node ref="K2" pin="L2" pintype="passive"/>
+    </net>
+    <net code="28" name="Net-(K2-PadL3)">
+      <node ref="K2" pin="L3" pintype="passive"/>
+      <node ref="X2+1" pin="1a" pintype="passive"/>
+    </net>
+    <net code="29" name="Net-(K2-PadT2)">
+      <node ref="K2" pin="T2" pintype="passive"/>
+      <node ref="K2" pin="T3" pintype="passive"/>
+    </net>
+    <net code="30" name="Net-(SC1-Pad1)">
+      <node ref="F1" pin="2" pintype="passive"/>
+      <node ref="SC1" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="31" name="Net-(SC1-Pad2)">
+      <node ref="SC1" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="SC2" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="32" name="Net-(SC2-Pad2)">
+      <node ref="F1" pin="4" pintype="passive"/>
+      <node ref="SC2" pin="2" pinfunction="-" pintype="passive"/>
+    </net>
+    <net code="33" name="Net-(SC3-Pad1)">
+      <node ref="F2" pin="2" pintype="passive"/>
+      <node ref="SC3" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="34" name="Net-(SC3-Pad2)">
+      <node ref="SC3" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="SC4" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="35" name="Net-(SC4-Pad2)">
+      <node ref="F2" pin="4" pintype="passive"/>
+      <node ref="SC4" pin="2" pinfunction="-" pintype="passive"/>
+    </net>
+    <net code="36" name="Net-(SC5-Pad1)">
+      <node ref="F3" pin="2" pintype="passive"/>
+      <node ref="SC5" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="37" name="Net-(SC5-Pad2)">
+      <node ref="SC5" pin="2" pinfunction="-" pintype="passive"/>
+      <node ref="SC6" pin="1" pinfunction="+" pintype="passive"/>
+    </net>
+    <net code="38" name="Net-(SC6-Pad2)">
+      <node ref="F3" pin="4" pintype="passive"/>
+      <node ref="SC6" pin="2" pinfunction="-" pintype="passive"/>
+    </net>
+    <net code="39" name="Net-(T1-Pad)">
+      <node ref="F4" pin="1" pintype="passive"/>
+      <node ref="T1" pin="" pinfunction="230V_Out_N" pintype="output"/>
+    </net>
+    <net code="40" name="Net-(T1-Pad)_4">
+      <node ref="F4" pin="3" pintype="passive"/>
+      <node ref="T1" pin="" pinfunction="230V_Out_L" pintype="output"/>
+    </net>
+    <net code="41" name="Net-(X1+1-Pad1b)">
+      <node ref="F1" pin="1" pintype="passive"/>
+      <node ref="X1+1" pin="1b" pintype="passive"/>
+    </net>
+    <net code="42" name="Net-(X1+1-Pad2a)">
+      <node ref="K2" pin="T1" pintype="passive"/>
+      <node ref="X1+1" pin="2a" pintype="passive"/>
+    </net>
+    <net code="43" name="Net-(X2+1-Pad1b)">
+      <node ref="F2" pin="1" pintype="passive"/>
+      <node ref="X2+1" pin="1b" pintype="passive"/>
+    </net>
+    <net code="44" name="Net-(X2+1-Pad2a)">
+      <node ref="T2" pin="8" pinfunction="PV_Panel_+" pintype="power_in"/>
+      <node ref="X2+1" pin="2a" pintype="passive"/>
+    </net>
+    <net code="45" name="Net-(X2+1-Pad2b)">
+      <node ref="F3" pin="1" pintype="passive"/>
+      <node ref="X2+1" pin="2b" pintype="passive"/>
+    </net>
+    <net code="46" name="Net-(X3-1-Pad1a)">
+      <node ref="T1" pin="" pinfunction="Solar-" pintype="input"/>
+      <node ref="X3-1" pin="1a" pintype="passive"/>
+    </net>
+    <net code="47" name="Net-(X3-1-Pad1b)">
+      <node ref="F1" pin="3" pintype="passive"/>
+      <node ref="X3-1" pin="1b" pintype="passive"/>
+    </net>
+    <net code="48" name="Net-(X3-1-Pad2a)">
+      <node ref="T2" pin="9" pinfunction="PV_Panel_-" pintype="power_in"/>
+      <node ref="X3-1" pin="2a" pintype="passive"/>
+    </net>
+    <net code="49" name="Net-(X3-1-Pad2b)">
+      <node ref="F2" pin="3" pintype="passive"/>
+      <node ref="X3-1" pin="2b" pintype="passive"/>
+    </net>
+    <net code="50" name="Net-(X3-1-Pad3b)">
+      <node ref="F3" pin="3" pintype="passive"/>
+      <node ref="X3-1" pin="3b" pintype="passive"/>
+    </net>
+    <net code="51" name="Net-(X4-Pad1b)">
+      <node ref="K3" pin="T2" pintype="passive"/>
+      <node ref="X4" pin="1b" pintype="passive"/>
+    </net>
+    <net code="52" name="Net-(X4-Pad2b)">
+      <node ref="K3" pin="T1" pintype="passive"/>
+      <node ref="X4" pin="2b" pintype="passive"/>
+    </net>
+    <net code="53" name="Net-(X4-Pad3b)">
+      <node ref="T1" pin="" pinfunction="230V_Out_PE" pintype="output"/>
+      <node ref="X4" pin="3b" pintype="passive"/>
+    </net>
+    <net code="54" name="WR In Abschaltung">
+      <node ref="K1" pin="A1" pintype="passive"/>
+    </net>
+    <net code="55" name="WR Out Abschaltung">
+      <node ref="K3" pin="A1" pintype="passive"/>
+    </net>
+    <net code="56" name="unconnected-(BT1-Pad2)">
+      <node ref="BT1" pin="2" pinfunction="-" pintype="passive"/>
+    </net>
+    <net code="57" name="unconnected-(F5-Pad1)">
+      <node ref="F5" pin="1" pintype="passive"/>
+    </net>
+    <net code="58" name="unconnected-(F5-Pad2)">
+      <node ref="F5" pin="2" pintype="passive"/>
+    </net>
+    <net code="59" name="unconnected-(F5-Pad3)">
+      <node ref="F5" pin="3" pintype="passive"/>
+    </net>
+    <net code="60" name="unconnected-(F5-Pad4)">
+      <node ref="F5" pin="4" pintype="passive"/>
+    </net>
+    <net code="61" name="unconnected-(F6-Pad1)">
+      <node ref="F6" pin="1" pintype="passive"/>
+    </net>
+    <net code="62" name="unconnected-(J3-Pad2)">
+      <node ref="J3" pin="2" pinfunction="D-" pintype="bidirectional"/>
+    </net>
+    <net code="63" name="unconnected-(J3-Pad3)">
+      <node ref="J3" pin="3" pinfunction="D+" pintype="bidirectional"/>
+    </net>
+    <net code="64" name="unconnected-(J3-Pad5)">
+      <node ref="J3" pin="5" pinfunction="Shield" pintype="passive"/>
+    </net>
+    <net code="65" name="unconnected-(J5-Pad2)">
+      <node ref="J5" pin="2" pinfunction="D-" pintype="bidirectional"/>
+    </net>
+    <net code="66" name="unconnected-(J5-Pad3)">
+      <node ref="J5" pin="3" pinfunction="D+" pintype="bidirectional"/>
+    </net>
+    <net code="67" name="unconnected-(J5-Pad5)">
+      <node ref="J5" pin="5" pinfunction="Shield" pintype="passive"/>
+    </net>
+    <net code="68" name="unconnected-(K3-PadA2)">
+      <node ref="K3" pin="A2" pintype="passive"/>
+    </net>
+    <net code="69" name="unconnected-(K3-PadL3)">
+      <node ref="K3" pin="L3" pintype="passive"/>
+    </net>
+    <net code="70" name="unconnected-(K3-PadT3)">
+      <node ref="K3" pin="T3" pintype="passive"/>
+    </net>
+    <net code="71" name="unconnected-(T1-Pad)_1">
+      <node ref="T1" pin="" pinfunction="230V_In-L" pintype="input"/>
+    </net>
+    <net code="72" name="unconnected-(T1-Pad)_2">
+      <node ref="T1" pin="" pinfunction="230V_In-N" pintype="input"/>
+    </net>
+    <net code="73" name="unconnected-(T1-Pad)_3">
+      <node ref="T1" pin="" pinfunction="230V_In-PE" pintype="input"/>
+    </net>
+    <net code="74" name="unconnected-(T2-Pad10)">
+      <node ref="T2" pin="10" pinfunction="Batterie_+" pintype="power_out"/>
+    </net>
+    <net code="75" name="unconnected-(T2-Pad11)">
+      <node ref="T2" pin="11" pinfunction="Batterie_-" pintype="power_out"/>
+    </net>
+    <net code="76" name="unconnected-(T2-Pad14)">
+      <node ref="T2" pin="14" pinfunction="Temperatur" pintype="input"/>
+    </net>
+    <net code="77" name="unconnected-(T2-Pad15)">
+      <node ref="T2" pin="15" pinfunction="Modbus_RS232" pintype="bidirectional"/>
+    </net>
+    <net code="78" name="unconnected-(X1+1-Pad2b)">
+      <node ref="X1+1" pin="2b" pintype="passive"/>
+    </net>
+    <net code="79" name="unconnected-(X2+1-Pad3a)">
+      <node ref="X2+1" pin="3a" pintype="passive"/>
+    </net>
+    <net code="80" name="unconnected-(X2+1-Pad3b)">
+      <node ref="X2+1" pin="3b" pintype="passive"/>
+    </net>
+    <net code="81" name="unconnected-(X2+1-Pad4b)">
+      <node ref="X2+1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="82" name="unconnected-(X2+1-Pad4b)_1">
+      <node ref="X2+1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="83" name="unconnected-(X3-1-Pad3a)">
+      <node ref="X3-1" pin="3a" pintype="passive"/>
+    </net>
+    <net code="84" name="unconnected-(X3-1-Pad4b)">
+      <node ref="X3-1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="85" name="unconnected-(X3-1-Pad4b)_1">
+      <node ref="X3-1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="86" name="unconnected-(X5+1-Pad1a)">
+      <node ref="X5+1" pin="1a" pintype="passive"/>
+    </net>
+    <net code="87" name="unconnected-(X5+1-Pad1b)">
+      <node ref="X5+1" pin="1b" pintype="passive"/>
+    </net>
+    <net code="88" name="unconnected-(X5+1-Pad2a)">
+      <node ref="X5+1" pin="2a" pintype="passive"/>
+    </net>
+    <net code="89" name="unconnected-(X5+1-Pad2b)">
+      <node ref="X5+1" pin="2b" pintype="passive"/>
+    </net>
+    <net code="90" name="unconnected-(X5+1-Pad3a)">
+      <node ref="X5+1" pin="3a" pintype="passive"/>
+    </net>
+    <net code="91" name="unconnected-(X5+1-Pad3b)">
+      <node ref="X5+1" pin="3b" pintype="passive"/>
+    </net>
+    <net code="92" name="unconnected-(X5+1-Pad4b)">
+      <node ref="X5+1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="93" name="unconnected-(X5+1-Pad4b)_1">
+      <node ref="X5+1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="94" name="unconnected-(X6-1-Pad1a)">
+      <node ref="X6-1" pin="1a" pintype="passive"/>
+    </net>
+    <net code="95" name="unconnected-(X6-1-Pad1b)">
+      <node ref="X6-1" pin="1b" pintype="passive"/>
+    </net>
+    <net code="96" name="unconnected-(X6-1-Pad2a)">
+      <node ref="X6-1" pin="2a" pintype="passive"/>
+    </net>
+    <net code="97" name="unconnected-(X6-1-Pad2b)">
+      <node ref="X6-1" pin="2b" pintype="passive"/>
+    </net>
+    <net code="98" name="unconnected-(X6-1-Pad3a)">
+      <node ref="X6-1" pin="3a" pintype="passive"/>
+    </net>
+    <net code="99" name="unconnected-(X6-1-Pad3b)">
+      <node ref="X6-1" pin="3b" pintype="passive"/>
+    </net>
+    <net code="100" name="unconnected-(X6-1-Pad4b)">
+      <node ref="X6-1" pin="4b" pintype="passive"/>
+    </net>
+    <net code="101" name="unconnected-(X6-1-Pad4b)_1">
+      <node ref="X6-1" pin="4b" pintype="passive"/>
+    </net>
+  </nets>
+</export>
