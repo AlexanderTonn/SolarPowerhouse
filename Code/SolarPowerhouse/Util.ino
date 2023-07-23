@@ -1,3 +1,5 @@
+#include "Util.h"
+
 // ############
 // MY UTILITIES
 // ############
@@ -26,13 +28,13 @@ void myMillis(uint64_t& uiMyMillis) {
   }
 }
 
-// ###############
-// MY UTILITIES
-// ###############
 
 template<typename T1, typename T2, typename T3 >
-
 bool edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) {
+  Serial.println(fBatteryVoltage);
+  Serial.println(TpreviousSignal);
+  Serial.println(byEdgeType);
+  Serial.println(Ttrigger);
   // RISING EDGE detection
   if (byEdgeType == RISING_EDGE) {
     if (TinputSignal >= Ttrigger && TpreviousSignal < Ttrigger ) {
@@ -59,3 +61,15 @@ bool edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Tt
   }
 }
 
+bool functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) {
+  uint64_t uiMillisActual = 0;
+  myMillis(uiMillisActual);
+
+  if (uiMillisActual - uiMillisOld >= uiTargetTime) {
+    myMillis(uiMillisOld);
+    return true;
+  } else {
+    return false;
+  }
+
+}

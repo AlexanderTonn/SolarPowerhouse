@@ -1,3 +1,6 @@
+#include "SCT013.h"
+// SOURCES: https://www.poweruc.pl/blogs/news/non-invasive-sensor-yhdc-sct013-000-ct-used-with-arduino-sct-013
+
 // Current Measuring with ADS1115
 float sctMeasuringAds1115(String sAdsInput) {
   float fVolt = 0.0;

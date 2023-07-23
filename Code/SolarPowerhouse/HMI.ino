@@ -1,3 +1,8 @@
+#include "HMI.h"
+#include "pinDefinitions.h"
+#include "HMI_graphics.h"
+#include "SCT013.h"
+
 // ##################
 // LYQUID CRYSTAL SPI CODE
 // ##################
@@ -14,6 +19,7 @@ void lcdInit() {
   // TODO: make brightness changeable
   // TODO: draw screen in the background and after finishing turn on tft backlight
   analogWrite(TFT_LED,75); 
+  Serial.println("ILI9341 and XPT2046 Init done!");
 }
 // TODO: turn off background if no touch input
 void lcdStandbyHandler() {
@@ -43,7 +49,7 @@ void drawGradientBackground() {
 
 // Show Graphics on mainscreen;
 // commit the byModeActual and return the updated operating mode;
-byte showMainscreen(byte byMode, byte byModeOld) {
+byte showMainscreen(byte byMode, byte &byModeOld) {
   tft.setTextSize(2);
   tft.setTextColor(ILI9341_BLACK);
   byPageId = PAGE_MAIN;
@@ -55,7 +61,7 @@ byte showMainscreen(byte byMode, byte byModeOld) {
     drawConnectionLine(byMode);
     drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 59, 55);
     drawImage(cInverterOff, SYMBOL_HEIGHT, SYMBOL_WIDTH, 224, 150);
-    return  BATTERY_MODE;
+    byModeOld  = BATTERY_MODE;
   } else if (byMode == INVERTER_MODE && byModeOld != INVERTER_MODE) {
     drawGradientBackground();
     drawImage(cSolarPanelOn, SYMBOL_HEIGHT, SYMBOL_WIDTH, 30, 150);
@@ -63,12 +69,11 @@ byte showMainscreen(byte byMode, byte byModeOld) {
     drawConnectionLine(byMode);
     drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 107, 55);
     drawImage(cBatteryOff, SYMBOL_HEIGHT, SYMBOL_WIDTH, 127, 150);
-    return  INVERTER_MODE;
+    byModeOld  = INVERTER_MODE;
   }
 }
 
 // UPDATING Arduino Variables on Display each second
-// TODO: Create area which can be reloaded again
 void showValues(byte byPage, byte byMode) {
   if (byPage == PAGE_MAIN) {
     if (byMode == BATTERY_MODE) {

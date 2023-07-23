@@ -1,3 +1,7 @@
+#include "pinDefinitions.h"
+#include "HMI.h"
+#include "controlLogic.h"
+
 // ##############
 // Switch Relay Function
 // ##############

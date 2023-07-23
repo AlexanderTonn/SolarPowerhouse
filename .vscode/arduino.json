@@ -1,0 +1,6 @@
+{
+    "board": "arduino:samd:mkrwifi1010",
+    "sketch": "Code/SolarPowerhouse/SolarPowerhouse.ino",
+    "output": "../build",
+    "port": "/dev/tty.usbmodem11201"
+}
