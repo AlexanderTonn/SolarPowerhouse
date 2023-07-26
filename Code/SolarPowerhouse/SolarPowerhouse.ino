@@ -19,11 +19,16 @@ void setup() {
   pinMode(BATTERY_VOLTAGE, INPUT);
 
   Serial.begin(uiBaudrate);
-  delay(1000);  // 100ms was not enough for init
+  delay(500);  // 100ms was not enough for init
   Wire.begin();
-  delay(1000);       // 100ms was not enough for init
+  delay(500);       // 100ms was not enough for init
+  ads1.setGain(GAIN_TWO);
+  ads2.setGain(GAIN_TWO);
+  ads1.setDataRate(RATE_ADS1115_860SPS);
+  ads2.setDataRate(RATE_ADS1115_860SPS);
   ads1.begin(0x48);  // default address
   ads2.begin(0x49);  // TODO: if i insert the module, the code will not execute
+ 
 
   rtcInit();
   // ds3231SetupHandler();
@@ -71,8 +76,6 @@ void loop() {
     } else
       xSwitchLaterOnMppt = true;
   }
-
-  // TODO: DO Reload if Value have changed to prevent "flickering" reloading of the value or only do this each seconds 
 
   bool x1 = false;
   x1 = functionTrigger(uiMyMillis,1000);
