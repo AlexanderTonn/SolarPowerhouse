@@ -14,6 +14,7 @@ bool xTrigBatteryEmpty = false;                                                 
 bool xSwitchLaterOnMppt = false;                                                                         //Switch later if current certainly to high
 bool xSwitchLaterOnInverter = false;                                                                     //Switch later if current certainly to high
 float fBatterySoCVoltage[10] = { 25.7, 25.12, 26.42, 26.44, 26.46, 26.56, 26.66, 26.70, 26.74, 26.92 };  // State of Charges of LiFePo4 Battery in 10% steps (beginning from 10%)
+float fSolarVoltage = 0.0; 
 uint64_t uiMyMillis = 0;
 
 

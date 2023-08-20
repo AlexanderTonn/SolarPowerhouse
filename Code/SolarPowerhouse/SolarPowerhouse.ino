@@ -16,7 +16,6 @@ void setup() {
   pinMode(K3_MPPT_CHARGER, OUTPUT);
   pinMode(K4_FANS, OUTPUT);
 
-  pinMode(BATTERY_VOLTAGE, INPUT);
 
   Serial.begin(uiBaudrate);
   delay(500);  // 100ms was not enough for init
@@ -77,13 +76,6 @@ void loop() {
       xSwitchLaterOnMppt = true;
   }
 
-  bool x1 = false;
-  x1 = functionTrigger(uiMyMillis,1000);
-  if(x1)
-    showValues(PAGE_MAIN, byModeActual);
-  if(x1 && byPageId == PAGE_MAIN)
-    showMainscreen(byModeActual, byModeOld);
-
-  delay(1000);
+  hmiLoop();
 }
 

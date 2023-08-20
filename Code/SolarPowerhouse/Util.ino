@@ -4,7 +4,7 @@
 // MY UTILITIES
 // ############
 // Collection of custom functions
-void myMillis(uint64_t& uiMyMillis) {
+auto myMillis(uint64_t& uiMyMillis) -> void {
   uint32_t uiMillis = 0;
   uint64_t uiMillisMax = 4294967295; // Max Value of millis
   uint64_t uiNewStartpoint = 0;     // This value will work as new start point for myMillis()
@@ -30,7 +30,7 @@ void myMillis(uint64_t& uiMyMillis) {
 
 
 template<typename T1, typename T2, typename T3 >
-bool edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) {
+auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) -> bool {
   Serial.println(fBatteryVoltage);
   Serial.println(TpreviousSignal);
   Serial.println(byEdgeType);
@@ -61,7 +61,7 @@ bool edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Tt
   }
 }
 
-bool functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) {
+auto functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) -> bool {
   uint64_t uiMillisActual = 0;
   myMillis(uiMillisActual);
 

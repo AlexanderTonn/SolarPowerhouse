@@ -5,12 +5,12 @@
 #define RISING_EDGE 0
 #define FALLING_EDGE 1
 
-void myMillis(uint64_t& uiMyMillis);
+auto myMillis(uint64_t& uiMyMillis) -> void;
 
 template<typename T1, typename T2, typename T3 >
-bool edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger );
+auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) -> bool;
 
-bool functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime);
+auto functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) -> bool;
 
 #endif
 

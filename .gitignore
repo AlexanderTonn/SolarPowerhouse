@@ -5,3 +5,8 @@ Code/.DS_Store
 # Files created by draw.io
 *.drawio.dtmp
 *.drawio.bkp
+
+#VS Code 
+.vscode/arduino.json
+.vscode/c_cpp_properties.json
+
