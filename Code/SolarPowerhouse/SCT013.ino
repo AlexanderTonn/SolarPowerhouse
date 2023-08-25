@@ -16,9 +16,6 @@ auto sctMeasuringAds1115(String sAdsInput) -> float{
       fCurrent /= 1000.0; 
       fSum += sq(fCurrent);
       uiNumOfSamples++;
-      Serial.print("fVolt: ");
-      Serial.println(fVolt);
-
     }
   } else if (sAdsInput == "23") {
     while (uiNumOfSamples < 100) {

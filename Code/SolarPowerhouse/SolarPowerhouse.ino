@@ -9,13 +9,14 @@
 void setup() {
   pinMode(TFT_CS, OUTPUT);
   pinMode(TFT_DC, OUTPUT);
-  pinMode(TFT_SD_CS, OUTPUT);  // playing safe that RX Pin 12 is defined as output pin for chip select
-  pinMode(TFT_LED, OUTPUT);    // TFT Brightness
+  pinMode(TFT_SD_CS, OUTPUT);  
+  pinMode(TFT_LED, OUTPUT);    
   pinMode(K1_INVERTER_DC, OUTPUT);
   pinMode(K2_INVERTER_AC, OUTPUT);
   pinMode(K3_MPPT_CHARGER, OUTPUT);
   pinMode(K4_FANS, OUTPUT);
-
+  pinMode(TOUCH_CS, OUTPUT); 
+  pinMode(TOUCH_IRQ, INPUT); 
 
   Serial.begin(uiBaudrate);
   delay(500);  // 100ms was not enough for init

@@ -7,12 +7,15 @@ auto lcdInit() -> void
 {
   Serial.println("Start Init ILI9341");
   tft.begin();
-  delay(1000);
   touch.begin();
-  delay(1000);
+  touch.setRotation(3);
+
   if (!touch.begin())
   {
     Serial.println("Could not start touch controller xpt2046");
+  }else 
+  {
+    Serial.println("Touch controller xpt2046 started");
   }
   tft.setRotation(3);
   // TODO: make brightness changeable
@@ -24,20 +27,21 @@ auto lcdInit() -> void
 auto hmiLoop() -> void
 {
   TS_Point touchPoint = touch.getPoint();
-  uint16_t uiX = touchPoint.x;
-  uint16_t uiY = touchPoint.y;
+  touchPoint.x = map(touchPoint.x, TOUCH_X_MIN, TOUCH_X_MAX, tft.width(), 0);
+  touchPoint.y = map(touchPoint.y, TOUCH_Y_MIN, TOUCH_Y_MAX, 0, tft.height());
   Serial.print("(x: ");
-  Serial.print(uiX);
+  Serial.print(touchPoint.x);
   Serial.print(")");
   Serial.print("(y: ");
-  Serial.print(uiY);
+  Serial.print(touchPoint.y);
   Serial.println(")");
+  Serial.print("Touch Pressure: ");
+  Serial.println(touchPoint.z);
 
   // Display HMI Pages
-  detectTouch(uiX, uiY, byPageId);
+  detectTouch(touchPoint.x, touchPoint.y, byPageId);
 
   bool x1 = functionTrigger(uiTimePageElasped, uiPageRefreshTime);
-  Serial.println(x1);
 
   if (x1)
   {
@@ -62,7 +66,6 @@ auto hmiLoop() -> void
   }
 
   bool x2 = functionTrigger(uiTimeValueElapsed, uiValueRefreshTime);
-  Serial.println(x2);
   if (x2 && byPageId == PAGE_MAIN)
   {
     showValues(PAGE_MAIN, byModeActual);
@@ -209,17 +212,17 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
   else
   {
     // Settings btn:
-    if (x >= 4 && x <= 41 && y >= 29 && y <= 69)
+    if (x >= 256 && x <= 291 && y >= 196 && y <= 224)
     {
       byPageId = PAGE_SETTINGS;
     }
     // Settings: Control Logic btn
-    if (byPageId == PAGE_SETTINGS && x >= 125 && x <= 153 && y >= 34 && y <= 280)
+    if (byPageId == PAGE_SETTINGS && x >= 46 && x <= 282 && y >= 88 && y <= 117)
     {
       byPageId = PAGE_CTRL_LOGIC_1;
     }
     // Home Btn pressed
-    else if (byPageId > 1 && x >= 190 && x <= 226 && y >= 135 && y <= 176)
+    else if (byPageId > 1 && x >= 147 && x <= 183 && y >= 19 && y <= 46)
     {
       byPageId = PAGE_MAIN;
     }

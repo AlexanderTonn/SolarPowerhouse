@@ -14,8 +14,8 @@
 #include <XPT2046_Touchscreen.h> // https://github.com/PaulStoffregen/XPT2046_Touchscreen
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
-// TODO: Rewiring Touchscreen to Hardware SPI
-XPT2046_Touchscreen touch(TOUCH_CS, TOUCH_IRQ);
+
+XPT2046_Touchscreen touch(TOUCH_CS);
 
 // LCD Variables
 // Image -> Array Converter: https://notisrac.github.io/FileToCArray/
@@ -37,6 +37,11 @@ uint64_t uiTimePageElasped = 0;     // elapsed Time for Page refreshing
 uint64_t uiTimeValueElapsed = 0;    // elapsed Time for value refreshing
 uint16_t uiPageRefreshTime = 100;   // Target time (ms) for refreshing Page screens
 uint16_t uiValueRefreshTime = 1000; // Target time (ms) for refreshing values on HMI
+
+constexpr static uint16_t TOUCH_X_MIN = 153;
+constexpr static uint16_t TOUCH_X_MAX = 3767;
+constexpr static uint16_t TOUCH_Y_MIN = 231;
+constexpr static uint16_t TOUCH_Y_MAX = 3868;
 
 auto lcdInit() -> void;
 auto hmiLoop() -> void; // Call HMI Stuff here

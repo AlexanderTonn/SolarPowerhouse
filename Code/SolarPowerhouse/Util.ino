@@ -31,10 +31,6 @@ auto myMillis(uint64_t& uiMyMillis) -> void {
 
 template<typename T1, typename T2, typename T3 >
 auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) -> bool {
-  Serial.println(fBatteryVoltage);
-  Serial.println(TpreviousSignal);
-  Serial.println(byEdgeType);
-  Serial.println(Ttrigger);
   // RISING EDGE detection
   if (byEdgeType == RISING_EDGE) {
     if (TinputSignal >= Ttrigger && TpreviousSignal < Ttrigger ) {
