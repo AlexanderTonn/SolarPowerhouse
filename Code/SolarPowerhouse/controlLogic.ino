@@ -15,18 +15,20 @@ void switchRelays(bool xDateChanged, float fCurrent1, float fCurrent2) {
 
 // Set Relays on Mppt Mode
 void relayOnMppt() {
+  auto ms = secondToMs(uiSett_PVswitchingDelay);
   digitalWrite(K2_INVERTER_AC, LOW);
-  delay(2000);
+  delay(ms);
   digitalWrite(K1_INVERTER_DC, LOW);
-  delay(2000);
+  delay(ms);
   digitalWrite(K3_MPPT_CHARGER, HIGH);
   byModeActual = BATTERY_MODE;
 }
 void relayOnInverter() {
+  auto ms = secondToMs(uiSett_PVswitchingDelay);
   digitalWrite(K3_MPPT_CHARGER, LOW);
-  delay(2000);
+  delay(ms);
   digitalWrite(K1_INVERTER_DC, HIGH);
-  delay(2000);
+  delay(ms);
   digitalWrite(K2_INVERTER_AC, HIGH);
   byModeActual = INVERTER_MODE;
 }

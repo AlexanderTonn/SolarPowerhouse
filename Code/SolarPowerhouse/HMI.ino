@@ -13,7 +13,8 @@ auto lcdInit() -> void
   if (!touch.begin())
   {
     Serial.println("Could not start touch controller xpt2046");
-  }else 
+  }
+  else
   {
     Serial.println("Touch controller xpt2046 started");
   }
@@ -55,9 +56,9 @@ auto hmiLoop() -> void
       byModeOld = 0; // delete. current "old" mode for reloading if returning to mainscreen
       showSettingsMenu();
     }
-    else if (byPageId == PAGE_CTRL_LOGIC_1 && byPageId != byPageIdOld)
+    else if (byPageId == PAGE_SETT_PV_SWITCHING && byPageId != byPageIdOld)
     {
-      showCtrlLogicSettings();
+      showSett_PvPageSwitching();
     }
     if (byPageId != byPageIdOld)
     {
@@ -66,9 +67,9 @@ auto hmiLoop() -> void
   }
 
   bool x2 = functionTrigger(uiTimeValueElapsed, uiValueRefreshTime);
-  if (x2 && byPageId == PAGE_MAIN)
+  if (x2)
   {
-    showValues(PAGE_MAIN, byModeActual);
+    showValues(byPageId, byModeActual);
   }
 }
 
@@ -101,34 +102,25 @@ auto drawGradientBackground() -> void
 }
 
 // UPDATING Arduino Variables on Display each second
-auto showValues(byte byPage, byte byMode) -> void
+auto showValues(byte byPage, byte byOption) -> void
 {
   if (byPage == PAGE_MAIN)
   {
     tft.setTextSize(2);
     tft.setTextColor(ILI9341_BLACK);
-    if (byMode == BATTERY_MODE)
+    if (byOption == BATTERY_MODE)
     {
-      //"delete" old text
-      tft.fillRect(65, 60, 95, 30, ILI9341_WHITE); // ftf.fillRect(xStart,yStart,xEnd,yEnd,color);
-      tft.setCursor(70, 68);                       // tft.setCursor(x,y);
-      tft.print(String(fCurrMppt));
-      tft.print(" A");
+      updateValue(fCurrMppt, "A", 7, 2, ILI9341_BLACK, 70, 68);
     }
-    else if (byMode == INVERTER_MODE)
+    else if (byOption == INVERTER_MODE)
     {
-      tft.fillRect(112, 60, 95, 30, ILI9341_WHITE);
-      tft.setCursor(118, 68);
-      tft.print(String(fCurrInverter));
-      tft.print(" A");
+      updateValue(fCurrInverter,"A",7,2,ILI9341_BLACK,118,68);
     }
-    tft.setTextSize(1);
-    tft.fillRect(40, 215, 50, 20, ILI9341_WHITE);
-    tft.setCursor(44, 220);
-    tft.print(String(fSolarVoltage) + " V");
-    tft.fillRect(140, 215, 50, 20, ILI9341_WHITE);
-    tft.setCursor(140, 220);
-    tft.print(String(fBatteryVoltage) + " V");
+    updateValue(fBatteryVoltage,"V",7,1,ILI9341_BLACK,140,220);
+    updateValue(fSolarVoltage, "V",7,1,ILI9341_BLACK,44,220);
+  }else if(byPage == PAGE_SETT_PV_SWITCHING)
+  {
+    updateValue(uiSett_PVswitchingDelay,"s",5,2,ILI9341_BLACK, 235, 154);
   }
 }
 
@@ -211,20 +203,123 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
   }
   else
   {
-    // Settings btn:
-    if (x >= 256 && x <= 291 && y >= 196 && y <= 224)
+    
+    bool xT1 = touchArea(x, y , 256 , 192 , 291 , 224);     // Settings btn:
+    bool xT2 = touchArea(x,y,46,88,282,117);                // Settings: Control Logic btn
+    if (byPageId == PAGE_MAIN && xT1)
     {
       byPageId = PAGE_SETTINGS;
     }
-    // Settings: Control Logic btn
-    if (byPageId == PAGE_SETTINGS && x >= 46 && x <= 282 && y >= 88 && y <= 117)
+    else if (byPageId == PAGE_SETTINGS && xT2)
     {
-      byPageId = PAGE_CTRL_LOGIC_1;
+      byPageId = PAGE_SETT_PV_SWITCHING;
     }
-    // Home Btn pressed
-    else if (byPageId > 1 && x >= 147 && x <= 183 && y >= 19 && y <= 46)
+    // Settings: PV-Switching Page
+    else if(byPageId == PAGE_SETT_PV_SWITCHING)
+    {
+      bool xT1 = touchArea(x,y,289,175,305,191);                 // PV on Inverter
+      bool xT2 = touchArea(x,y,287,141,308,163);                // PV on Mppt
+      bool xT3 = touchArea(x,y,288,108,306,128);               // Reset Day
+
+      if(xT1)
+      {
+        xSett_PVonInverter = changeCheckbox(xSett_PVonInverter);
+        showCheckboxState(xSett_PVonInverter, 280, 40);
+      }else if(xT2)
+      {
+        xSett_PVonMppt = changeCheckbox(xSett_PVonMppt);
+        showCheckboxState(xSett_PVonMppt, 280, 75);
+      }else if(xT3)
+      {
+        xSett_ResetDay = changeCheckbox( xSett_ResetDay);
+        showCheckboxState(xSett_ResetDay, 280, 110);
+      }
+       delay(100);   // preventing bouncing, probably you have later a better solution
+    }
+   
+      // Home Btn pressed
+    if (byPageId > 1 && x >= 147 && x <= 183 && y >= 19 && y <= 46)
     {
       byPageId = PAGE_MAIN;
     }
+  }
+}
+
+auto printText(uint8_t uiTextSize, uint16_t uiColor, String sString, uint16_t uiX, uint16_t uiY) -> void
+{
+  tft.setTextSize(uiTextSize);
+  tft.setTextColor(uiColor);
+  tft.setCursor(uiX, uiY);
+  tft.print(sString);
+}
+// #######
+// Function for updating variables on screen
+// #######
+// T_Variable = Variable to update
+// sUnit = Unit of the variable
+// sLength = length of the variable (including empty spaces)
+// uiTextSize = tft.setTextSize
+// uiColor = tft.setTextColor
+// uiX = tft.setCursor x coordinate
+// uiY = tft.setCursor y coordinate
+template<typename T>
+auto updateValue(T T_variable, String sUnit, uint16_t uiLength, uint8_t uiTextSize, uint16_t uiColor, uint16_t uiX, uint16_t uiY) -> void
+{
+  uint8_t uiHeight = 0;
+  uint16_t uiX_start = uiX-1, uiY_start = uiY-1, uiX_end = 0; 
+
+  if(uiTextSize == 1)
+  {
+    uiX_end = uiLength * 6;
+    uiHeight = 10;
+  }
+  else if(uiTextSize == 2)
+  {
+    uiX_end = uiLength * uiTextSize * 6;
+    uiHeight = 20; 
+
+  }else
+  {
+    return;
+  }
+  tft.fillRect(uiX_start, uiY_start, uiX_end, uiHeight, ILI9341_WHITE);
+  tft.setCursor(uiX, uiY);
+  tft.setTextSize(uiTextSize);
+  tft.setTextColor(uiColor);
+  tft.print(String(T_variable) + " " + sUnit);
+}
+
+// Function for printing the checkbox depending of the passed variable
+auto showCheckboxState(bool xVariable, uint16_t uiX, uint16_t uiY) -> void
+{
+  if (xVariable)
+  {
+    drawImage(checkbox1, CHECKBOX_HEIGHT_WIDTH, CHECKBOX_HEIGHT_WIDTH, uiX, uiY);
+  }
+  else
+  {
+    drawImage(checkbox0, CHECKBOX_HEIGHT_WIDTH, CHECKBOX_HEIGHT_WIDTH, uiX, uiY);
+  }
+}
+
+// changing the checkbox state and return the decision to the variable
+auto changeCheckbox(bool xCurrentState) -> bool
+{
+  if(xCurrentState)
+  {
+    return xCurrentState = false;
+  }else
+  {
+    return xCurrentState = true;
+  }
+}
+
+auto touchArea(int16_t x, int16_t y ,uint16_t xStart,uint16_t yStart,uint16_t xEnd,uint16_t yEnd) -> bool {
+  if(x >= xStart && x <= xEnd && y >= yStart && y <= yEnd)
+  {
+    return true;
+  }else
+  {
+    return false;
   }
 }

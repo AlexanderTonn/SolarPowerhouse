@@ -66,9 +66,20 @@ auto showSettingsMenu() -> void {
 // Page 3
 // ##########
 // Control Logic Settings page
-auto showCtrlLogicSettings() -> void {
+auto showSett_PvPageSwitching() -> void  {
   drawGradientBackground();
 
+  printText(3,ILI9341_BLACK,"PV1 Umschaltung",10,10);
+  printText(2,ILI9341_BLACK,"Batteriebetrieb",10,50);
+  printText(2,ILI9341_BLACK,"Inverterbetrieb",10,85);
+  printText(2,ILI9341_BLACK,"Reset bei Tageswechsel",10,120);
+  printText(2,ILI9341_BLACK,"Schaltabstand",10,155);
+
+  showCheckboxState(xSett_PVonInverter, 280, 40);
+  showCheckboxState(xSett_PVonMppt, 280, 75);
+  showCheckboxState(xSett_ResetDay, 280, 110);
+
+  drawImage(cValueboxSettings,VALUEBOXSETTINGS_HEIGHT,VALUEBOXSETTINGS_WIDTH, 213, 145);
 
   // drawImage(cPageUp, FOOTER_BTN_HEIGHT, FOOTER_BTN_WIDTH, 89, 190);
   drawImage(cHomeBtn, FOOTER_BTN_HEIGHT, FOOTER_BTN_WIDTH, 140, 190);
