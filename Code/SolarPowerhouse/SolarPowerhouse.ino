@@ -14,7 +14,6 @@ void setup() {
   pinMode(K1_INVERTER_DC, OUTPUT);
   pinMode(K2_INVERTER_AC, OUTPUT);
   pinMode(K3_MPPT_CHARGER, OUTPUT);
-  pinMode(K4_FANS, OUTPUT);
   pinMode(TOUCH_CS, OUTPUT); 
   pinMode(TOUCH_IRQ, INPUT); 
 

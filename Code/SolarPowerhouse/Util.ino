@@ -69,3 +69,7 @@ auto functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) -> bool {
   }
 
 }
+
+auto secondToMs(uint16_t uiS) -> uint16_t{
+  return uiS*1000;
+}
