@@ -20,7 +20,7 @@ auto myMillis(uint64_t& uiMyMillis) -> void {
   // max millis which could be saved with uint64t: 18446744073709551616 == 213503982334 days
 
   if (uiMillis < 4320000000 && uiMyMillis >= uiNewStartpoint) {
-    uiMyMillis = uiNewStartpoint + uiMillis;
+     uiMyMillis = uiNewStartpoint + uiMillis;
   }
   // my Millis counted up to 100 days
   else {
@@ -30,22 +30,25 @@ auto myMillis(uint64_t& uiMyMillis) -> void {
 
 
 template<typename T1, typename T2, typename T3 >
-auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Ttrigger ) -> bool {
+auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, edgeType Type, T3 Ttrigger ) -> bool {
   // RISING EDGE detection
-  if (byEdgeType == RISING_EDGE) {
+  switch(Type)
+  {
+    case edgeType::RISING_EDGE :
     if (TinputSignal >= Ttrigger && TpreviousSignal < Ttrigger ) {
       TpreviousSignal = TinputSignal;
       return true;
     }
     // Resetting the signal if Ttrigger was reached
-    else if ((TinputSignal >= Ttrigger && TpreviousSignal >= Ttrigger) || (TinputSignal < Ttrigger && TpreviousSignal >= Ttrigger)) {
+    else if ((TinputSignal >= Ttrigger && TpreviousSignal >= Ttrigger) 
+          || (TinputSignal < Ttrigger && TpreviousSignal >= Ttrigger)) {
       TpreviousSignal = TinputSignal;
       return false;
-    }
-  }
-  // FALLING EDGE detection
-  if (byEdgeType == FALLING_EDGE) {
-    //rising edge
+    }else 
+      return false; 
+    break;
+
+    case edgeType::FALLING_EDGE :
     if (TinputSignal <= Ttrigger && TpreviousSignal > Ttrigger) {
       TpreviousSignal = TinputSignal;
       return true;
@@ -54,15 +57,23 @@ auto edgeDetection (T1 TinputSignal, T2 &TpreviousSignal, byte byEdgeType, T3 Tt
       TpreviousSignal = TinputSignal;
       return false;
     }
+    else 
+      return false;
+    break;
+
+    default:
+    Serial.println("Error: No edge type defined");
+    break;
+
   }
+
 }
 
-auto functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) -> bool {
-  uint64_t uiMillisActual = 0;
-  myMillis(uiMillisActual);
+// Max Targettime: about 49 days 
+auto functionTrigger(uint32_t &uiMillisOld, uint32_t uiTargetTime) -> bool {
 
-  if (uiMillisActual - uiMillisOld >= uiTargetTime) {
-    myMillis(uiMillisOld);
+  if (millis() - uiMillisOld >= uiTargetTime) {
+    uiMillisOld += uiTargetTime;
     return true;
   } else {
     return false;
@@ -72,4 +83,12 @@ auto functionTrigger(uint64_t &uiMillisOld, uint64_t uiTargetTime) -> bool {
 
 auto secondToMs(uint16_t uiS) -> uint16_t{
   return uiS*1000;
+}
+
+auto fmap(float value, float in_min, float in_max, float out_min, float out_max) -> float
+{
+  float fScaled = 0.0;
+  fScaled = out_min+(value-in_min)*((out_max-out_min)/(in_max-in_min));
+  return fScaled;
+
 }

@@ -10,12 +10,10 @@ RTClib rtcLib;
 bool xCentury;
 bool xH12;  // 12/24h Flag
 bool xhPM;  // AM/PM Flag
-byte byDateActual = 0;
 byte byDateOld = 0;         // needed for detecting whether day has changed
 bool xDateChanged = false;  // true, if Date has changed
 
 void rtcInit();
-void ds3231SetupHandler();
-bool rtcCheckDayChange();
+auto rtcCheckDayChange(bool xSettDayChangeActive) -> bool;
 
 #endif

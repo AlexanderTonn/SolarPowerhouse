@@ -2,9 +2,10 @@
 #define HMI_H
 #include "pinDefinitions.h"
 #include "HMI_graphics.h"
-#include "SCT013.h"
+#include "ADC.h"
 #include "controlLogic.h"
 #include "Util.h"
+#include <array>
 
 // https://github.com/HWHardsoft/Arduino-MKR-Codelock
 // https://github.com/KrisKasprzak/Adafruit_ILI9341_Menu/blob/main/Examples/Mega2560/Mega2560_Menu_TouchInput/Mega2560_Menu_TouchInput.ino
@@ -21,23 +22,35 @@ XPT2046_Touchscreen touch(TOUCH_CS);
 // Image -> Array Converter: https://notisrac.github.io/FileToCArray/
 // array size is 4489
 
-constexpr static uint8_t BATTERY_MODE = 1;
-constexpr static uint8_t INVERTER_MODE = 2;
-
 byte byModeActual = 0; // display in BATTERY- or INVERTER_MODE
 byte byModeOld = 0;    // Detecting whether Mode has been changed
+bool xReturnFromOtherPage = false; // necessary for reloading the mainscreen after settings menu
 
-constexpr static uint8_t PAGE_MAIN = 1;
-constexpr static uint8_t PAGE_SETTINGS = 2;
-constexpr static uint8_t PAGE_SETT_PV_SWITCHING = 3;
+enum pages{
+    SPLASH,
+    MAIN,
+    SETTINGS,
+    SETT_PV_SWITCHING1,
+    SETT_PV_SWITCHING2,
+    NUMPAD
+    };
 
 byte byPageId = 0;    // PageId for Future enhancements
 byte byPageIdOld = 0; // Detecting whether page has been changed
+byte byPageIdAfterNumpad = 0; // necessary for reloading the screen changing values
 
-uint64_t uiTimePageElasped = 0;     // elapsed Time for Page refreshing
-uint64_t uiTimeValueElapsed = 0;    // elapsed Time for value refreshing
-uint16_t uiPageRefreshTime = 100;   // Target time (ms) for refreshing Page screens
-uint16_t uiValueRefreshTime = 1000; // Target time (ms) for refreshing values on HMI
+enum class guiElement{
+  CHECKBOX,
+  TEXT_INPUT,
+  NOT_USED
+};
+
+uint32_t uiTimeValueElapsed = 0;    // elapsed Time for value refreshing
+uint16_t uiPageRefreshTime = 100;   // Settings option: Target time (ms) for refreshing Page screens
+uint16_t uiValueRefreshTime = 1000; // Settings option: Target time (ms) for refreshing values on HMI
+uint16_t uiStandbyTargetTime = 20;  // Settings option: turn off display after x seconds
+uint8_t uiTftBrightness = 75;      // Settings option: brightness of TFT
+
 
 constexpr static uint16_t TOUCH_X_MIN = 153;
 constexpr static uint16_t TOUCH_X_MAX = 3767;
@@ -48,21 +61,48 @@ auto lcdInit() -> void;
 auto hmiLoop() -> void; // Call HMI Stuff here
 auto lcdStandbyHandler() -> void;
 auto drawGradientBackground() -> void;
-auto showMainscreen(byte byMode, byte &byModeOld) -> byte;
+auto showMainscreen() -> void;
+auto showSettingsMenu() -> void;
+
+String sVariableName = ""; // have to be written with the name of the variable which have to be edited
+
+auto drawNumpad(String &string) -> void;
+auto numpadTouch() -> byte;
+auto numPadHandler() -> void; 
+
 auto showValues(byte byPage, byte byOption) -> void;
 auto drawConnectionLine(byte byMode) -> void;
-auto drawImage(const char *cImgArray, uint16_t uiHeight, uint16_t uiWidth, uint16_t uiX, uint16_t uiY) -> void;
+auto drawImage(const char *cImgArray, 
+              uint16_t uiHeight, 
+              uint16_t uiWidth, 
+              uint16_t uiX, 
+              uint16_t uiY) -> void;
 auto convertPixelToColor(uint8_t pixel) -> uint16_t;
 auto showMenuBar(byte byPageId) -> void;
 auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void;
-auto showSettingsMenu() -> void;
-auto showSett_PvPageSwitching() -> void;
-auto printText(uint8_t uiTextSize, uint16_t uiColor, String sString, uint16_t uiX, uint16_t uiY ) -> void;
+auto hmiTouch() -> void;
+auto printText(uint8_t uiTextSize, 
+              uint16_t uiColor, 
+              String sString, 
+              uint16_t uiX, 
+              uint16_t uiY ) -> void;
 auto changeCheckbox(bool xCurrentState) -> bool;
-auto showCheckboxState(bool xVariable, uint16_t uiX, uint16_t uiY) -> void;
+auto showCheckboxState(bool xVariable, 
+                      uint16_t uiX, 
+                      uint16_t uiY) -> void;
+
+template<typename T1, typename T2, typename T3, typename T4>
+auto drawSettingsPage(String sLabel,
+                  String sLine1, guiElement element1, T1 var1,
+                  String sLine2, guiElement element2, T2 var2,
+                  String sLine3, guiElement element3, T3 var3,
+                  String sLine4, guiElement element4, T4 var4,
+                  bool xPrevPage, bool xNextPage) -> void;
 
 template<typename T>
 auto updateValue(T T_variable, String sUnit, uint16_t uiLength, uint8_t uiTextSize, uint16_t uiColor, uint16_t uiX, uint16_t uiY) -> void;
+
 auto touchArea(int16_t x, int16_t y ,uint16_t xStart,uint16_t yStart,uint16_t xEnd,uint16_t yEnd) -> bool;
+
 
 #endif

@@ -2,8 +2,7 @@
 #include "HMI_graphics.h"
 #include "controlLogic.h"
 #include "HMI.h"
-#include "RTC.h"
-#include "SCT013.h"
+#include "ADC.h"
 #include "Util.h"
 
 void setup() {
@@ -14,20 +13,18 @@ void setup() {
   pinMode(K1_INVERTER_DC, OUTPUT);
   pinMode(K2_INVERTER_AC, OUTPUT);
   pinMode(K3_MPPT_CHARGER, OUTPUT);
-  pinMode(TOUCH_CS, OUTPUT); 
-  pinMode(TOUCH_IRQ, INPUT); 
+  pinMode(TOUCH_CS, OUTPUT);
+  pinMode(TOUCH_IRQ, INPUT);
+
+  SPI.begin();
+  // SPI.beginTransaction(SPISettings(48000000, MSBFIRST, SPI_MODE0)); // 48MHz clock speed, more isn't possible with wifi1010
+  delay(1000);
 
   Serial.begin(uiBaudrate);
-  delay(500);  // 100ms was not enough for init
+  delay(1000);       // 100ms was not enough for init
+  adsInit();
+
   Wire.begin();
-  delay(500);       // 100ms was not enough for init
-  ads1.setGain(GAIN_TWO);
-  ads2.setGain(GAIN_TWO);
-  ads1.setDataRate(RATE_ADS1115_860SPS);
-  ads2.setDataRate(RATE_ADS1115_860SPS);
-  ads1.begin(0x48);  // default address
-  ads2.begin(0x49);  // TODO: if i insert the module, the code will not execute
- 
 
   rtcInit();
   // ds3231SetupHandler();
@@ -36,46 +33,38 @@ void setup() {
 
   drawGradientBackground();
 
-  byPageId = PAGE_MAIN;
+  byPageId = MAIN;
 }
 
 void loop() {
   // READING INPUTS
-  fCurrMppt = sctMeasuringAds1115("01");
-  fCurrInverter = sctMeasuringAds1115("23");
+  
+  if(byModeActual == INVERTER_MODE)
+  {
+    fCurrInverter = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_0_1,  uiInverterSamples, 100, fCurrInverter);
+    
+  }
+  else if(byModeActual == BATTERY_MODE)
+  {
+    fCurrMppt = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_2_3, uiMpptSamples , 100, fCurrMppt);
+  }
 
-  xTrigBatteryFull = edgeDetection(fBatteryVoltage, fTrigBatteryFullPrevious, RISING_EDGE, fBatterySoCVoltage[8]);     //Battery is full after reaching 100%
-  xTrigBatteryEmpty = edgeDetection(fBatteryVoltage, fTrigBatteryEmptyPrevious, FALLING_EDGE, fBatterySoCVoltage[4]);  // Battery should charged if dropped down to 50%
+  fBatteryVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_0_1, voltRange::VOLT_0_30);
+  //fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
+
+
 
   // CONTROL LOGIC
-  // Set Relays on Mppt if day changed
-  xDateChanged = rtcCheckDayChange();
-  if (xDateChanged == true && fCurrMppt <= fSwitchCurrentTarget && fCurrInverter <= fSwitchCurrentTarget || xFirstCycle == true) {
-    relayOnMppt();
-    byModeActual = BATTERY_MODE;
-    xFirstCycle = false;
-  }
+  controlLogic();
 
-  // Switching from mppt to inverter
-  if (xTrigBatteryFull == true || xSwitchLaterOnInverter == true) {
-    if (fCurrMppt <= fSwitchCurrentTarget) {
-      relayOnInverter();
-      byModeActual = INVERTER_MODE;
-      xSwitchLaterOnInverter = false;
-    } else
-      xSwitchLaterOnInverter = true;
-  }
-  // Switching from Invertwe to mppt charger
-  // if current is certainly to high then try to switch later if the current is low
-  else if (xTrigBatteryEmpty == true || xSwitchLaterOnMppt == true) {
-    if (fCurrInverter <= fSwitchCurrentTarget) {
-      relayOnMppt();
-      byModeActual = BATTERY_MODE;
-      xSwitchLaterOnMppt = false;
-    } else
-      xSwitchLaterOnMppt = true;
-  }
+  // Set Outputs
+  if(xPv1OnInverter)
+    pv1OnInverter();
+  if(xPv1OnMppt)
+    pv1OnMppt();
 
+  // HMI
+  hmiTouch();
   hmiLoop();
 }
 

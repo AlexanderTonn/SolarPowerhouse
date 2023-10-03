@@ -1,35 +1,47 @@
 #ifndef CONTROL_LOGIC_HPP
 #define CONTROL_LOGIC_HPP
 
-#include "array"
+#include "RTC.h"
+#include "pinDefinitions.h"
+#include "HMI.h"
 
 uint32_t uiBaudrate = 115200;
 
 // Control Logic
-float fSwitchCurrentTarget = 1.0;                                                                        // Threshold Current when is switching allowed
-bool xFirstCycle = true;                                                                                 // for all function which should only execute once
-float fBatteryVoltage = 0.0;                                                                             // measured voltage of battery
-float fTrigBatteryFullPrevious = 0.0;                                                                    //used for edge detection
-float fTrigBatteryEmptyPrevious = 0.0;                                                                   //used for edge detection
-bool xTrigBatteryFull = false;                                                                           // Trigger if battery has reached a specific SoC
-bool xTrigBatteryEmpty = false;                                                                          //Trigger if battery is dropped down to a specific voltage
-bool xSwitchLaterOnMppt = false;                                                                         //Switch later if current certainly to high
-bool xSwitchLaterOnInverter = false;                                                                     //Switch later if current certainly to high
-bool xSett_PVonInverter = false;                                                                         // Settings option for permanently connecting PV to Inverter
-bool xSett_PVonMppt = false;                                                                             // Settings option for permanently connecting PV to MPPT
-bool xSett_ResetDay = false;                                                                             // Settings option for switch back PV1 onto battery after day change
-uint8_t uiSett_PVswitchingDelay = 2;                                                                   // Settings option for delay between switching PV1 from battery to inverter
+bool xFirstCycle = true;                // for all function which should only execute once
+float fBatteryVoltage = 0.0;            // measured voltage of battery
+float fTrigBatteryFullPrevious = 0.0;   //used for edge detection
+float fTrigBatteryEmptyPrevious = 0.0;  //used for edge detection
+bool xSwitchLaterOnMppt = false;    //Switch later if current certainly to high
+bool xSwitchLaterOnInverter = false;    //Switch later if current certainly to high
 
-// todo replace with std::array 
-// std::array<float, 21 > aBatterySoC = {...};
-float fBatterySoCVoltage[10] = { 25.7, 26.12, 26.42, 26.44, 26.46, 26.56, 26.66, 26.70, 26.74, 26.92 };  // State of Charges of LiFePo4 Battery in 10% steps (beginning from 10%)
+bool xSett_PVonInverter = false;     // Settings option for permanently connecting PV to Inverter
+bool xSett_PVonMppt = false;    // Settings option for permanently connecting PV to MPPT
+bool xSett_ResetDay = true;  // Settings option for switch back PV1 onto battery after day change
+uint8_t uiSett_PVswitchingDelay = 2;  // Settings option for delay between switching PV1 from battery to inverter
+bool xSett_considerCurrent = true; // Settings option for considering current for switching PV1
+
+uint32_t uiMillisCheckDayChange = 0 ;           // 1 hour 
+
+enum operationMode{
+    NORMAL,
+    BATTERY_MODE,
+    INVERTER_MODE,
+    NO_DAY_CHANGE
+};
+
 float fSolarVoltage = 0.0; 
+float fSett_TargetVoltageInverter = 27.00;  // Target Voltage for switching to Inverter
+float fSett_TargetVoltageMppt = 26.00;      // Target Voltage for switching back to Mppt
+float fSett_SwitchCurrentTarget = 1.00;       // Threshold Current when is switching allowed
 uint64_t uiMyMillis = 0;
 
+auto pv1OnMppt() -> void;           // Setting relay outputs, have to be run in void loop()
+auto pv1OnInverter() -> void;       // Setting relay outputs, have to be run in void loop()
+bool xPv1OnMppt = false;            // marker bit for switching PV1 to MPPT
+bool xPv1OnInverter = false;        // marker bit for switching PV1 to Inverter
 
-void switchRelays(bool xDateChanged, float fCurrent1, float fCurrent2);
-void relayOnMppt();
-void relayOnInverter();
-
+auto SettingsPvSwitching(bool xOnInverter, bool xOnMppt) -> operationMode;     // checking available options for switching PV1
+auto controlLogic() -> void;                                                  // main function for control logic
 
 #endif
