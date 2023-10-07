@@ -99,10 +99,18 @@ auto drawSettingsPage(String sLabel,
                   String sLine4, guiElement element4, T4 var4,
                   bool xPrevPage, bool xNextPage) -> void;
 
+auto touchSettingsPage(uint16_t x, uint16_t y,
+                      guiElement element1,
+                      guiElement element2,
+                      guiElement element3,
+                      guiElement element4,
+                      bool xSwitchPage) -> byte;
+
 template<typename T>
 auto updateValue(T T_variable, String sUnit, uint16_t uiLength, uint8_t uiTextSize, uint16_t uiColor, uint16_t uiX, uint16_t uiY) -> void;
 
 auto touchArea(int16_t x, int16_t y ,uint16_t xStart,uint16_t yStart,uint16_t xEnd,uint16_t yEnd) -> bool;
+
 
 
 #endif

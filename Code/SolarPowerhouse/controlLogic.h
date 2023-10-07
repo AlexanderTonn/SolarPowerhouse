@@ -19,7 +19,7 @@ bool xSett_PVonInverter = false;     // Settings option for permanently connecti
 bool xSett_PVonMppt = false;    // Settings option for permanently connecting PV to MPPT
 bool xSett_ResetDay = true;  // Settings option for switch back PV1 onto battery after day change
 uint8_t uiSett_PVswitchingDelay = 2;  // Settings option for delay between switching PV1 from battery to inverter
-bool xSett_considerCurrent = true; // Settings option for considering current for switching PV1
+bool xSett_ignoreCurrent = false; // Settings option for considering current for switching PV1
 
 uint32_t uiMillisCheckDayChange = 0 ;           // 1 hour 
 

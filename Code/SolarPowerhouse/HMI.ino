@@ -31,21 +31,16 @@ auto hmiLoop() -> void
   static uint32_t uiTimePageElasped = 0;
   bool x1 = functionTrigger(uiTimePageElasped, uiPageRefreshTime);
 
-  // handle numpad
-  if(!byPageIdAfterNumpad == 0)
-  {
-    numPadHandler();
-  }
-
   if (x1)
   {
     if (byPageId == MAIN)
     {
       showMainscreen();
       showMenuBar(byPageId);
-    }else
+    }
+    else
     {
-      xReturnFromOtherPage = true; 
+      xReturnFromOtherPage = true;
     }
 
     if (byPageId == SETTINGS && byPageId != byPageIdOld)
@@ -55,25 +50,36 @@ auto hmiLoop() -> void
     else if (byPageId == SETT_PV_SWITCHING1 && byPageId != byPageIdOld)
     {
       drawSettingsPage("PV1 Betriebsmodus",
-                  "Batteriebetrieb ", guiElement::CHECKBOX, xSett_PVonMppt,
-                  "Inverterbetrieb ", guiElement::CHECKBOX, xSett_PVonInverter,
-                  "Reset bei Tageswechsel", guiElement::CHECKBOX, xSett_ResetDay,
-                  "Schaltabstand", guiElement::TEXT_INPUT, uiSett_PVswitchingDelay,
-                  false, true);
+                       "Batteriebetrieb ", guiElement::CHECKBOX, xSett_PVonMppt,
+                       "Inverterbetrieb ", guiElement::CHECKBOX, xSett_PVonInverter,
+                       "Reset bei Tageswechsel", guiElement::CHECKBOX, xSett_ResetDay,
+                       "Schaltabstand", guiElement::TEXT_INPUT, uiSett_PVswitchingDelay,
+                       true, true);
     }
-    else if(byPageId == SETT_PV_SWITCHING2 && byPageId != byPageIdOld)
+    else if (byPageId == SETT_PV_SWITCHING2 && byPageId != byPageIdOld)
     {
       drawSettingsPage("Schalt-Grenzwerte",
-                  "PV1 Strom beachten", guiElement::CHECKBOX, xSett_considerCurrent,
-                  "PV1 auf Inverter, ab >", guiElement::TEXT_INPUT, fSett_TargetVoltageInverter,
-                  "PV1 auf Batt, ab <", guiElement::TEXT_INPUT, fSett_TargetVoltageMppt,
-                  "Schalten, bei < ", guiElement::TEXT_INPUT, fSett_SwitchCurrentTarget,
-                  true, false);
+                       "Strom ignorieren", guiElement::CHECKBOX, xSett_ignoreCurrent,
+                       "Inverter, ab >", guiElement::TEXT_INPUT, fSett_TargetVoltageInverter,
+                       "Batterie, ab <", guiElement::TEXT_INPUT, fSett_TargetVoltageMppt,
+                       "Schalten, bei < ", guiElement::TEXT_INPUT, fSett_SwitchCurrentTarget,
+                       true, false);
     }
+    else if (byPageId == NUMPAD && byPageId != byPageIdOld)
+    {
+      drawNumpad(sVariableName);
+    }
+
     if (byPageId != byPageIdOld)
     {
       byPageIdOld = byPageId;
     }
+  }
+
+  // handle numpad
+  if (!byPageIdAfterNumpad == 0)
+  {
+    numPadHandler();
   }
 
   bool x2 = functionTrigger(uiTimeValueElapsed, uiValueRefreshTime);
@@ -92,9 +98,9 @@ auto lcdStandbyHandler() -> void
   bool x1 = functionTrigger(uiTimeStandbyElapsed, uiStandbyTargetTime * 1000);
 
   // fade out HMI if no touch input
-  if(xStandby)
+  if (xStandby)
   {
-    for(auto i = uiTftBrightness; i > 0; i--)
+    for (auto i = uiTftBrightness; i > 0; i--)
     {
       analogWrite(TFT_LED, i);
       delay(1);
@@ -102,7 +108,6 @@ auto lcdStandbyHandler() -> void
   }
 
   // TODO: Turn on, if touch was pressed
-
 }
 
 // #######
@@ -131,28 +136,36 @@ auto drawGradientBackground() -> void
 // UPDATING Arduino Variables on Display each second
 auto showValues(byte byPage, byte byOption) -> void
 {
-  switch(byPage)
+  switch (byPage)
   {
-    case MAIN : 
+  case MAIN:
     tft.setTextSize(2);
     tft.setTextColor(ILI9341_BLACK);
-    if (byOption == BATTERY_MODE)
+    if (!xSett_ignoreCurrent)
     {
-      updateValue(fCurrMppt, "A", 7, 2, ILI9341_BLACK, 70, 68);
+      if (byOption == BATTERY_MODE)
+      {
+        updateValue(fCurrMppt, "A", 7, 2, ILI9341_BLACK, 70, 68);
+      }
+      else if (byOption == INVERTER_MODE)
+      {
+        updateValue(fCurrInverter, "A", 7, 2, ILI9341_BLACK, 118, 68);
+      }
     }
-    else if (byOption == INVERTER_MODE)
-    {
-      updateValue(fCurrInverter, "A", 7, 2, ILI9341_BLACK, 118, 68);
-    }
+
     updateValue(fBatteryVoltage, "V", 7, 1, ILI9341_BLACK, 140, 220);
     updateValue(fSolarVoltage, "V", 7, 1, ILI9341_BLACK, 44, 220);
     break;
 
-    case SETT_PV_SWITCHING1 :
+  case SETT_PV_SWITCHING1:
     updateValue(uiSett_PVswitchingDelay, "s", 5, 2, ILI9341_BLACK, 235, 154);
-    break; 
-
-    default: 
+    break;
+  case SETT_PV_SWITCHING2:
+    updateValue(fSett_TargetVoltageInverter, "V", 5, 2, ILI9341_BLACK, 225, 85);
+    updateValue(fSett_TargetVoltageMppt, "V", 5, 2, ILI9341_BLACK, 225, 120);
+    updateValue(fSett_SwitchCurrentTarget, "A", 5, 2, ILI9341_BLACK, 225, 155);
+    break;
+  default:
     Serial.println("Error: Page not found");
     break;
   }
@@ -227,10 +240,10 @@ auto convertPixelToColor(uint8_t pixel) -> uint16_t
   return tft.color565(r, g, b);           // 16-Bit-Farbwert zurückgeben
 }
 
-auto hmiTouch() -> void 
+auto hmiTouch() -> void
 {
   // Detecting touch
-  if(touch.touched())
+  if (touch.touched())
   {
     TS_Point touchPoint = touch.getPoint();
     touchPoint.x = map(touchPoint.x, TOUCH_X_MIN, TOUCH_X_MAX, tft.width(), 0);
@@ -251,8 +264,8 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
   else
   {
 
-    bool xSettingsTouched = touchArea(x, y, 256, 192, 291, 224); // Settings btn:
-    bool xConrolLogicTouched = touchArea(x, y, 46, 88, 282, 117);   // Settings: Control Logic btn
+    bool xSettingsTouched = touchArea(x, y, 256, 192, 291, 224);  // Settings btn:
+    bool xConrolLogicTouched = touchArea(x, y, 46, 88, 282, 117); // Settings: Control Logic btn
     if (byPageId == MAIN && xSettingsTouched)
     {
       byPageId = SETTINGS;
@@ -264,49 +277,79 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
     // Settings: PV-Switching Page
     else if (byPageId == SETT_PV_SWITCHING1)
     {
-      bool xCb1Touched = touchArea(x, y, 288, 175, 305, 191); // PV on Mppt
-      bool xCb2Touched = touchArea(x, y, 288, 141, 305, 163); // PV on Inverter
-      bool xCb3Touched = touchArea(x, y, 288, 108, 305, 128); // Reset Day
-      bool xTextInTouched = touchArea(x,y , 235, 154, 270, 170); // Text Input
-
-      if (xCb1Touched)
+      byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::CHECKBOX,
+                                            guiElement::CHECKBOX,
+                                            guiElement::CHECKBOX,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
       {
         xSett_PVonMppt = changeCheckbox(xSett_PVonMppt);
-        xSett_PVonInverter = false;                   // if PV on Mppt is selected, PV on Inverter is not allowed
+        xSett_PVonInverter = false; // if PV on Mppt is selected, PV on Inverter is not allowed
         showCheckboxState(xSett_PVonMppt, 280, 40);
         showCheckboxState(xSett_PVonInverter, 280, 75);
-        
       }
-      else if (xCb2Touched)
+      else if (byGuiElement == 2)
       {
         xSett_PVonInverter = changeCheckbox(xSett_PVonInverter);
-        xSett_PVonMppt = false;                       // if PV on Inverter is selected, PV on Mppt is not allowed
+        xSett_PVonMppt = false; // if PV on Inverter is selected, PV on Mppt is not allowed
         showCheckboxState(xSett_PVonMppt, 280, 40);
         showCheckboxState(xSett_PVonInverter, 280, 75);
       }
-      else if (xCb3Touched)
+      else if (byGuiElement == 3)
       {
         xSett_ResetDay = changeCheckbox(xSett_ResetDay);
         showCheckboxState(xSett_ResetDay, 280, 110);
       }
-      else if(xTextInTouched)
+      else if (byGuiElement == 4)
       {
         byPageId = NUMPAD;
         byPageIdAfterNumpad = SETT_PV_SWITCHING1;
-        sVariableName = "Schaltabstand";
-        drawNumpad(sVariableName);
+        sVariableName = "Schaltabstand [s]";
       }
       delay(100); // preventing bouncing, probably you have later a better solution
     }
+    else if (byPageId == SETT_PV_SWITCHING2)
+    {
+      byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::CHECKBOX,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
+      {
+        xSett_ignoreCurrent = changeCheckbox(xSett_ignoreCurrent);
+        showCheckboxState(xSett_ignoreCurrent, 280, 40);
+      }
+      else if (byGuiElement == 2)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = SETT_PV_SWITCHING2;
+        sVariableName = "Inverter, ab > [V]";
+      }
+      else if (byGuiElement == 3)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = SETT_PV_SWITCHING2;
+        sVariableName = "Batterie, ab < [V]";
+      }
+      else if (byGuiElement == 4)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = SETT_PV_SWITCHING2;
+        sVariableName = "Schalten, bei < [A]";
+      }
+    }
 
     // Home Btn pressed
-    if (byPageId > 1 && x >= 147 && x <= 183 && y >= 19 && y <= 46)
+    if (byPageId > 1 && byPageId != NUMPAD && touchArea(x, y, 147, 19, 183, 46))
     {
       byPageId = MAIN;
     }
   }
 }
-
 
 auto printText(uint8_t uiTextSize, uint16_t uiColor, String sString, uint16_t uiX, uint16_t uiY) -> void
 {
@@ -326,13 +369,13 @@ auto printText(uint8_t uiTextSize, uint16_t uiColor, String sString, uint16_t ui
 // uiX = tft.setCursor x coordinate
 // uiY = tft.setCursor y coordinate
 template <typename T>
-auto updateValue(T T_variable, 
-                String sUnit, 
-                uint16_t uiLength, 
-                uint8_t uiTextSize, 
-                uint16_t uiColor, 
-                uint16_t uiX, 
-                uint16_t uiY) -> void
+auto updateValue(T T_variable,
+                 String sUnit,
+                 uint16_t uiLength,
+                 uint8_t uiTextSize,
+                 uint16_t uiColor,
+                 uint16_t uiX,
+                 uint16_t uiY) -> void
 {
   uint8_t uiHeight = 0;
   uint16_t uiX_start = uiX - 1, uiY_start = uiY - 1, uiX_end = 0;
@@ -359,9 +402,9 @@ auto updateValue(T T_variable,
 }
 
 // Function for printing the checkbox depending of the passed variable
-auto showCheckboxState(bool xVariable, 
-                      uint16_t uiX, 
-                      uint16_t uiY) -> void
+auto showCheckboxState(bool xVariable,
+                       uint16_t uiX,
+                       uint16_t uiY) -> void
 {
   if (xVariable)
   {
@@ -385,12 +428,12 @@ auto changeCheckbox(bool xCurrentState) -> bool
   }
 }
 
-auto touchArea(int16_t x, 
-              int16_t y, 
-              uint16_t xStart, 
-              uint16_t yStart, 
-              uint16_t xEnd, 
-              uint16_t yEnd) -> bool
+auto touchArea(int16_t x,
+               int16_t y,
+               uint16_t xStart,
+               uint16_t yStart,
+               uint16_t xEnd,
+               uint16_t yEnd) -> bool
 {
   if (x >= xStart && x <= xEnd && y >= yStart && y <= yEnd)
   {
@@ -415,118 +458,219 @@ auto detectNumPadtouch(uint16_t x, uint16_t y, bool &xEnter) -> void
 
 auto numpadTouch() -> byte
 {
-  TS_Point touchPoint = touch.getPoint();
-  touchPoint.x = map(touchPoint.x, TOUCH_X_MIN, TOUCH_X_MAX, tft.width(), 0);
-  touchPoint.y = map(touchPoint.y, TOUCH_Y_MIN, TOUCH_Y_MAX, 0, tft.height());
 
-  std::array<bool, 14> xNumpadElement = {false};
+  // preventing bouncing, probably you have later a better solution
 
-  xNumpadElement.at(0) = touchArea(touchPoint.x, touchPoint.y, 196, 163, 238, 232); // Number 0 on numpad
-  xNumpadElement.at(12) = touchArea(touchPoint.x, touchPoint.y, 196, 83, 238, 153); // komma on numpad
-  xNumpadElement.at(13) = touchArea(touchPoint.x, touchPoint.y, 196, 244, 237, 316); // Abort on numpad
-
-  xNumpadElement.at(1) = touchArea(touchPoint.x, touchPoint.y, 56, 244, 93, 316); // Number 1 on numpad
-  xNumpadElement.at(2) = touchArea(touchPoint.x, touchPoint.y, 56, 163, 93, 233); // Number 2 on numpad
-  xNumpadElement.at(3) = touchArea(touchPoint.x, touchPoint.y, 56, 83, 93, 153); // Number 3 on numpad
-  xNumpadElement.at(10) = touchArea(touchPoint.x, touchPoint.y, 56, 1, 140, 72); // Enter on numpad
-
-  xNumpadElement.at(4) = touchArea(touchPoint.x, touchPoint.y, 101, 244, 140, 316); // Number 4 on numpad
-  xNumpadElement.at(5) = touchArea(touchPoint.x, touchPoint.y, 101, 163, 140, 233); // Number 5 on numpad
-  xNumpadElement.at(6) = touchArea(touchPoint.x, touchPoint.y, 101, 83, 140, 153); // Number 6 on numpad
-
-  xNumpadElement.at(7) = touchArea(touchPoint.x, touchPoint.y, 146, 244, 185, 316); // Number 7 on numpad
-  xNumpadElement.at(8) = touchArea(touchPoint.x, touchPoint.y, 146, 163, 185, 233); // Number 8 on numpad
-  xNumpadElement.at(9) = touchArea(touchPoint.x, touchPoint.y, 146, 83, 185, 153); // Number 9 on numpad
-  xNumpadElement.at(11) = touchArea(touchPoint.x, touchPoint.y, 146, 1, 238, 72); // CLR on numpad
-
-  for (auto i=0; i < xNumpadElement.size(); i++)
+  if (touch.touched())
   {
-    if (xNumpadElement.at(i))
+    TS_Point touchPoint = touch.getPoint();
+    touchPoint.x = map(touchPoint.x, TOUCH_X_MIN, TOUCH_X_MAX, tft.width(), 0);
+    touchPoint.y = map(touchPoint.y, TOUCH_Y_MIN, TOUCH_Y_MAX, 0, tft.height());
+
+    std::array<bool, 14> xNumpadElement = {false};
+    
+    xNumpadElement.at(0) = touchArea(touchPoint.x, touchPoint.y, 90, 4, 153, 38);    // Number 0 on numpad
+    xNumpadElement.at(12) = touchArea(touchPoint.x, touchPoint.y, 170, 4, 233, 38);  // komma on numpad
+    xNumpadElement.at(13) = touchArea(touchPoint.x, touchPoint.y, 10, 4, 75, 38); // Abort on numpad
+
+    xNumpadElement.at(1) = touchArea(touchPoint.x, touchPoint.y, 8, 146, 77,  180); // Number 1 on numpad
+    xNumpadElement.at(2) = touchArea(touchPoint.x, touchPoint.y, 90, 146, 157,  180); // Number 2 on numpad
+    xNumpadElement.at(3) = touchArea(touchPoint.x, touchPoint.y, 168, 146, 231,  180);  // Number 3 on numpad
+    xNumpadElement.at(10) = touchArea(touchPoint.x, touchPoint.y, 250, 102, 310,  180);  // Enter on numpad
+
+    xNumpadElement.at(4) = touchArea(touchPoint.x, touchPoint.y, 8, 102, 77, 133); // Number 4 on numpad
+    xNumpadElement.at(5) = touchArea(touchPoint.x, touchPoint.y, 90, 102, 157, 133); // Number 5 on numpad
+    xNumpadElement.at(6) = touchArea(touchPoint.x, touchPoint.y, 168, 102, 231, 133);  // Number 6 on numpad
+
+    xNumpadElement.at(7) = touchArea(touchPoint.x, touchPoint.y, 8, 53, 77, 88); // Number 7 on numpad
+    xNumpadElement.at(8) = touchArea(touchPoint.x, touchPoint.y, 90, 50, 157, 88); // Number 8 on numpad
+    xNumpadElement.at(9) = touchArea(touchPoint.x, touchPoint.y, 168, 50, 231, 88);  // Number 9 on numpad
+    xNumpadElement.at(11) = touchArea(touchPoint.x, touchPoint.y, 250, 8, 307, 90);   // CLR on numpad
+
+    delay(200); // preventing bouncing, probably you have later a better solution
+
+    for (auto i = 0; i < xNumpadElement.size(); i++)
     {
-      return i; 
+      if (xNumpadElement.at(i))
+      {
+        return i;
+      }
     }
-  }
+  
+    
+  }else
+  return 255; // return 255 if no touch input
 }
 
 auto numPadHandler() -> void
 {
   static bool xFinished = false; // true if enter was pressed
+  bool xCleared = false, xAbort = false;         // true if CLR was pressed
   static String sTempValue = ""; // temporary value for editing
+  static String sTempValueOld = ""; // temporary value for editing
 
-  // sVariableName 
+  // sVariableName
   // get numpad insert
   byte byNumpadInput = numpadTouch();
   switch (byNumpadInput)
   {
-    case 0: // Number 0 was pressed
+  case 0: // Number 0 was pressed
     sTempValue += "0";
-    break; 
-    case 1: // Number 1 was pressed
+    break;
+  case 1: // Number 1 was pressed
     sTempValue += "1";
     break;
-    case 2: // Number 2 was pressed
+  case 2: // Number 2 was pressed
     sTempValue += "2";
     break;
-    case 3: // Number 3 was pressed
+  case 3: // Number 3 was pressed
     sTempValue += "3";
     break;
-    case 4: // Number 4 was pressed
+  case 4: // Number 4 was pressed
     sTempValue += "4";
     break;
-    case 5: // Number 5 was pressed
+  case 5: // Number 5 was pressed
     sTempValue += "5";
     break;
-    case 6: // Number 6 was pressed
+  case 6: // Number 6 was pressed
     sTempValue += "6";
     break;
-    case 7: // Number 7 was pressed
+  case 7: // Number 7 was pressed
     sTempValue += "7";
     break;
-    case 8: // Number 8 was pressed
+  case 8: // Number 8 was pressed
     sTempValue += "8";
     break;
-    case 9: // Number 9 was pressed
+  case 9: // Number 9 was pressed
     sTempValue += "9";
     break;
-    case 10: // Enter was pressed
+  case 10: // Enter was pressed
     xFinished = true;
     break;
-    case 11: // CLR was pressed
-    sTempValue = "";
+  case 11: // CLR was pressed
+    sTempValue = "     ";
+    xCleared = true;
     break;
-    case 12: // komma was pressed
-    sTempValue += ",";
+  case 12: // komma was pressed
+    sTempValue += ".";
     break;
-    case 13: // Abort was pressed
-    xFinished = true;
+  case 13: // Abort was pressed
     sTempValue = "";
+    xAbort = true;
     break;
   }
 
-  // map the temporary value to the variable
-  if(xFinished)
+  if(sTempValue != sTempValueOld && sTempValue.length() < 6){
+    sTempValueOld = sTempValue;
+    updateValue(sTempValue, "", sTempValue.length(), 2, ILI9341_BLACK, 190, 20);
+  }
+
+  if(xCleared)
+    sTempValue = "";
+
+  if(xAbort)
   {
-    if (sVariableName == "uiSett_PVswitchingDelay")
+    sTempValue = "";
+    byPageId = byPageIdAfterNumpad;
+    byPageIdAfterNumpad = 0;
+  }
+
+  // map the temporary value to the variable
+  if (xFinished)
+  {
+    if (sVariableName == "Schaltabstand [s]")
     {
       uiSett_PVswitchingDelay = sTempValue.toInt();
     }
-    if(sVariableName == "fTargetVoltageInverter")
+    if (sVariableName == "Inverter, ab > [V]")
     {
       fSett_TargetVoltageInverter = sTempValue.toFloat();
     }
-    if(sVariableName == "fTargetVoltageMppt")
+    if (sVariableName == "Batterie, ab < [V]")
     {
       fSett_TargetVoltageMppt = sTempValue.toFloat();
     }
-    if(sVariableName == "fSwitchCurrentTarget")
+    if (sVariableName == "Schalten, bei < [A]")
     {
       fSett_SwitchCurrentTarget = sTempValue.toFloat();
     }
-
     sVariableName = "";
     xFinished = false;
     byPageId = byPageIdAfterNumpad;
     byPageIdAfterNumpad = 0;
   }
+}
 
+// Detectin Touch on Settings Pages and return a byte value which is indicating the selected element
+auto touchSettingsPage(uint16_t x, uint16_t y,
+                       guiElement element1,
+                       guiElement element2,
+                       guiElement element3,
+                       guiElement element4,
+                       bool xSwitchPage) -> byte
+{
+
+  switch (element1)
+  {
+  case guiElement::CHECKBOX:
+    if (x >= 288 && x <= 305 && y >= 175 && y <= 191)
+      return 1;
+    break;
+  // TODO!: Check whether Text Input have correct coordinates
+  case guiElement::TEXT_INPUT:
+    if (x >= 213 && x <= 312 && y >= 40 && y <= 72)
+      return 1;
+    break;
+
+  default:
+    break;
+  }
+  switch (element2)
+  {
+  case guiElement::CHECKBOX:
+    if (x >= 288 && x <= 305 && y >= 141 && y <= 163)
+      return 2;
+    break;
+  case guiElement::TEXT_INPUT:
+    if (x >= 219 && x <= 305 && y >= 139 && y <= 158)
+      return 2;
+    break;
+  default:
+    break;
+  }
+  switch (element3)
+  {
+  case guiElement::CHECKBOX:
+    if (x >= 288 && x <= 305 && y >= 108 && y <= 128)
+      return 3;
+    break;
+  case guiElement::TEXT_INPUT:
+    if (x >= 218 && x <= 302 && y >= 102 && y <= 122)
+      return 3;
+    break;
+  default:
+    break;
+  }
+  switch (element4)
+  {
+  case guiElement::CHECKBOX:
+    if (x >= 288 && x <= 305 && y >= 145 && y <= 161)
+      return 4;
+    break;
+  case guiElement::TEXT_INPUT:
+    if (x >= 222 && x <= 312 && y >= 70 && y <= 88)
+      return 4;
+    break;
+  }
+  if (xSwitchPage)
+  {
+    // Previous Page
+    if (x >= 94 && x <= 125 && y >= 16 && y <= 42)
+      byPageId -= 1;
+    // Next Page
+    if (x >= 199 && x <= 230 && y >= 16 && y <= 42 && byPageId < NUMPAD - 1)
+      byPageId += 1;
+
+    return 0;
+  }
 }

@@ -46,7 +46,6 @@ auto sctMeasuringAds1115(Adafruit_ADS1115 ads, adsInput input, uint16_t &uiCurre
   // do calculation 
 
     fCurrent = fVolt * FACTOR;
-    Serial.println("fCurrent: " + String(fCurrent));
     fCurrent /= 1000.0; 
     fBuffer += sq(fCurrent);
     uiCurrentSamples++;
@@ -64,8 +63,6 @@ auto sctMeasuringAds1115(Adafruit_ADS1115 ads, adsInput input, uint16_t &uiCurre
     return auResult;
   }else 
     return fCurrentValue;
-  
-  
   } 
 
 

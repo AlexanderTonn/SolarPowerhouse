@@ -8,7 +8,15 @@
 // Set Relays on Mppt Mode
 void pv1OnMppt()
 {
-    static std::array<uint32_t, 3> uiMillisElapsed = {millis(),millis(),millis()};
+    static std::array<uint32_t, 3> uiMillisElapsed = {0};
+    static bool xGetMillis = true;
+    if(xGetMillis)
+    {
+      uiMillisElapsed.at(0) = millis();
+      uiMillisElapsed.at(1) = millis();
+      uiMillisElapsed.at(2) = millis();
+      xGetMillis = false;
+    }
 
     if(functionTrigger(uiMillisElapsed.at(0), uiSett_PVswitchingDelay*1000))
     {
@@ -26,11 +34,20 @@ void pv1OnMppt()
       digitalWrite(K3_MPPT_CHARGER, HIGH);
       byModeOld = byModeActual;
       xPv1OnMppt = false;
+      xGetMillis = true;
     }
 }
 void pv1OnInverter()
 {
-    static std::array<uint32_t, 3> uiMillisElapsed = {millis(),millis(),millis()};
+    static std::array<uint32_t, 3> uiMillisElapsed = {0};
+    static bool xGetMillis = true;
+    if(xGetMillis)
+    {
+      uiMillisElapsed.at(0) = millis();
+      uiMillisElapsed.at(1) = millis();
+      uiMillisElapsed.at(2) = millis();
+      xGetMillis = false;
+    }
     
     if(functionTrigger(uiMillisElapsed.at(0), uiSett_PVswitchingDelay*1000))
       digitalWrite(K3_MPPT_CHARGER, LOW);
@@ -43,6 +60,7 @@ void pv1OnInverter()
       digitalWrite(K2_INVERTER_AC, HIGH);
       byModeOld = byModeActual;
       xPv1OnInverter = false;
+      xGetMillis = true;
     }
 }
 

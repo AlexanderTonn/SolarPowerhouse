@@ -5,11 +5,12 @@
 #include "ADC.h"
 #include "Util.h"
 
-void setup() {
+void setup()
+{
   pinMode(TFT_CS, OUTPUT);
   pinMode(TFT_DC, OUTPUT);
-  pinMode(TFT_SD_CS, OUTPUT);  
-  pinMode(TFT_LED, OUTPUT);    
+  pinMode(TFT_SD_CS, OUTPUT);
+  pinMode(TFT_LED, OUTPUT);
   pinMode(K1_INVERTER_DC, OUTPUT);
   pinMode(K2_INVERTER_AC, OUTPUT);
   pinMode(K3_MPPT_CHARGER, OUTPUT);
@@ -21,7 +22,7 @@ void setup() {
   delay(1000);
 
   Serial.begin(uiBaudrate);
-  delay(1000);       // 100ms was not enough for init
+  delay(1000); // 100ms was not enough for init
   adsInit();
 
   Wire.begin();
@@ -36,35 +37,39 @@ void setup() {
   byPageId = MAIN;
 }
 
-void loop() {
+void loop()
+{
   // READING INPUTS
-  
-  if(byModeActual == INVERTER_MODE)
+
+  if (!xSett_ignoreCurrent)
   {
-    fCurrInverter = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_0_1,  uiInverterSamples, 100, fCurrInverter);
-    
-  }
-  else if(byModeActual == BATTERY_MODE)
+    if (byModeActual == INVERTER_MODE)
+    {
+      fCurrInverter = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_0_1, uiInverterSamples, 100, fCurrInverter);
+    }
+    else if (byModeActual == BATTERY_MODE)
+    {
+      fCurrMppt = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_2_3, uiMpptSamples, 100, fCurrMppt);
+    }
+  }else
   {
-    fCurrMppt = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_2_3, uiMpptSamples , 100, fCurrMppt);
+    fCurrInverter = 0.0;
+    fCurrMppt = 0.0;
   }
 
   fBatteryVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_0_1, voltRange::VOLT_0_30);
-  //fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
-
-
+  // fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
 
   // CONTROL LOGIC
   controlLogic();
 
   // Set Outputs
-  if(xPv1OnInverter)
+  if (xPv1OnInverter)
     pv1OnInverter();
-  if(xPv1OnMppt)
+  if (xPv1OnMppt)
     pv1OnMppt();
 
   // HMI
   hmiTouch();
   hmiLoop();
 }
-

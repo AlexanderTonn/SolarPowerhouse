@@ -16,8 +16,9 @@ auto showMainscreen() -> void{
     drawImage(cSolarPanelOn, SYMBOL_HEIGHT, SYMBOL_WIDTH, 30, 150);
     drawImage(cBatteryOn, SYMBOL_HEIGHT, SYMBOL_WIDTH, 127, 150);
     drawConnectionLine(byModeActual);
-    drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 59, 55);
     drawImage(cInverterOff, INVERTER_HEIGHT_WIDTH, INVERTER_HEIGHT_WIDTH, 224, 150);
+    if(!xSett_ignoreCurrent)
+      drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 59, 55);
     byModeOld = byModeActual;
   } else if (byModeActual == INVERTER_MODE && (byModeOld != INVERTER_MODE || xReturnFromOtherPage == true))
   {
@@ -25,8 +26,9 @@ auto showMainscreen() -> void{
     drawImage(cSolarPanelOn, SYMBOL_HEIGHT, SYMBOL_WIDTH, 30, 150);
     drawImage(cInverterOn, INVERTER_HEIGHT_WIDTH, INVERTER_HEIGHT_WIDTH, 224, 150);
     drawConnectionLine(byModeActual);
-    drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 107, 55);
     drawImage(cBatteryOff, SYMBOL_HEIGHT, SYMBOL_WIDTH, 127, 150);
+    if(!xSett_ignoreCurrent)
+      drawImage(cValueBox, VALUEBOX_HEIGHT, VALUEBOX_WIDTH, 107, 55);
     byModeOld = byModeActual;
   }
   xReturnFromOtherPage = false; 
@@ -157,9 +159,11 @@ auto drawSettingsPage(String sLabel,
    
  }
 
+
 // Show Numpad for changing variables on HMI
  auto drawNumpad(String &string) -> void 
 {
+  drawGradientBackground();
   // Value box
   printText(2,ILI9341_BLACK, string ,10, 20);
   tft.fillRect(175, 5, 130, 40, ILI9341_BLACK);
@@ -195,6 +199,7 @@ auto drawSettingsPage(String sLabel,
   printText(3,ILI9341_BLACK,"1",30,64);
   printText(3,ILI9341_BLACK,"4",30,111);
   printText(3,ILI9341_BLACK,"7",30,158);
+  printText(3,ILI9341_RED,"X",30,205); // Abort button 
   // second column
   printText(3,ILI9341_BLACK,"2",110,64);
   printText(3,ILI9341_BLACK,"5",110,111);
