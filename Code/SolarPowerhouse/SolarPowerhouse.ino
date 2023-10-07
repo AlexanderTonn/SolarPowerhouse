@@ -58,7 +58,7 @@ void loop()
   }
 
   fBatteryVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_0_1, voltRange::VOLT_0_30);
-  // fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
+  fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
 
   // CONTROL LOGIC
   controlLogic();

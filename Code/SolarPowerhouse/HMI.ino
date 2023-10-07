@@ -90,24 +90,37 @@ auto hmiLoop() -> void
 }
 
 // TODO: turn off background if no touch input
-auto lcdStandbyHandler() -> void
+auto StandbyHandler(uint32_t &uiElapsed, uint32_t uiTarget, bool xTouched) -> void
 {
-  static uint32_t uiTimeStandbyElapsed = 0;
   static bool xStandby = false;
 
-  bool x1 = functionTrigger(uiTimeStandbyElapsed, uiStandbyTargetTime * 1000);
-
-  // fade out HMI if no touch input
-  if (xStandby)
+  if (!xTouched 
+      && millis() - uiElapsed >= uiTarget * 1000 
+      && !xStandby)
   {
-    for (auto i = uiTftBrightness; i > 0; i--)
+    // fade out HMI if no touch input
+
+      xStandby = true;
+      for (auto i = uiTftBrightness; i > 0; i--)
+      {
+        analogWrite(TFT_LED, i);
+        delay(10);
+      }
+  }
+  // Turn on, if touch was pressed
+  else if (xTouched && xStandby)
+  {
+    xStandby = false;
+    for (auto i = 0; i < uiTftBrightness; i++)
     {
       analogWrite(TFT_LED, i);
-      delay(1);
+      delay(10);
     }
   }
+  
+  if(xTouched)
+    uiElapsed = millis(); // reset timer
 
-  // TODO: Turn on, if touch was pressed
 }
 
 // #######
@@ -242,9 +255,11 @@ auto convertPixelToColor(uint8_t pixel) -> uint16_t
 
 auto hmiTouch() -> void
 {
-  // Detecting touch
+  StandbyHandler(uiTimeWithNoTouch, uiStandbyTargetTime, false);
+
   if (touch.touched())
   {
+    StandbyHandler(uiTimeWithNoTouch, uiStandbyTargetTime, true);
     TS_Point touchPoint = touch.getPoint();
     touchPoint.x = map(touchPoint.x, TOUCH_X_MIN, TOUCH_X_MAX, tft.width(), 0);
     touchPoint.y = map(touchPoint.y, TOUCH_Y_MIN, TOUCH_Y_MAX, 0, tft.height());
@@ -468,24 +483,24 @@ auto numpadTouch() -> byte
     touchPoint.y = map(touchPoint.y, TOUCH_Y_MIN, TOUCH_Y_MAX, 0, tft.height());
 
     std::array<bool, 14> xNumpadElement = {false};
-    
-    xNumpadElement.at(0) = touchArea(touchPoint.x, touchPoint.y, 90, 4, 153, 38);    // Number 0 on numpad
-    xNumpadElement.at(12) = touchArea(touchPoint.x, touchPoint.y, 170, 4, 233, 38);  // komma on numpad
-    xNumpadElement.at(13) = touchArea(touchPoint.x, touchPoint.y, 10, 4, 75, 38); // Abort on numpad
 
-    xNumpadElement.at(1) = touchArea(touchPoint.x, touchPoint.y, 8, 146, 77,  180); // Number 1 on numpad
-    xNumpadElement.at(2) = touchArea(touchPoint.x, touchPoint.y, 90, 146, 157,  180); // Number 2 on numpad
-    xNumpadElement.at(3) = touchArea(touchPoint.x, touchPoint.y, 168, 146, 231,  180);  // Number 3 on numpad
-    xNumpadElement.at(10) = touchArea(touchPoint.x, touchPoint.y, 250, 102, 310,  180);  // Enter on numpad
+    xNumpadElement.at(0) = touchArea(touchPoint.x, touchPoint.y, 90, 4, 153, 38);   // Number 0 on numpad
+    xNumpadElement.at(12) = touchArea(touchPoint.x, touchPoint.y, 170, 4, 233, 38); // komma on numpad
+    xNumpadElement.at(13) = touchArea(touchPoint.x, touchPoint.y, 10, 4, 75, 38);   // Abort on numpad
 
-    xNumpadElement.at(4) = touchArea(touchPoint.x, touchPoint.y, 8, 102, 77, 133); // Number 4 on numpad
-    xNumpadElement.at(5) = touchArea(touchPoint.x, touchPoint.y, 90, 102, 157, 133); // Number 5 on numpad
-    xNumpadElement.at(6) = touchArea(touchPoint.x, touchPoint.y, 168, 102, 231, 133);  // Number 6 on numpad
+    xNumpadElement.at(1) = touchArea(touchPoint.x, touchPoint.y, 8, 146, 77, 180);     // Number 1 on numpad
+    xNumpadElement.at(2) = touchArea(touchPoint.x, touchPoint.y, 90, 146, 157, 180);   // Number 2 on numpad
+    xNumpadElement.at(3) = touchArea(touchPoint.x, touchPoint.y, 168, 146, 231, 180);  // Number 3 on numpad
+    xNumpadElement.at(10) = touchArea(touchPoint.x, touchPoint.y, 250, 102, 310, 180); // Enter on numpad
 
-    xNumpadElement.at(7) = touchArea(touchPoint.x, touchPoint.y, 8, 53, 77, 88); // Number 7 on numpad
-    xNumpadElement.at(8) = touchArea(touchPoint.x, touchPoint.y, 90, 50, 157, 88); // Number 8 on numpad
-    xNumpadElement.at(9) = touchArea(touchPoint.x, touchPoint.y, 168, 50, 231, 88);  // Number 9 on numpad
-    xNumpadElement.at(11) = touchArea(touchPoint.x, touchPoint.y, 250, 8, 307, 90);   // CLR on numpad
+    xNumpadElement.at(4) = touchArea(touchPoint.x, touchPoint.y, 8, 102, 77, 133);    // Number 4 on numpad
+    xNumpadElement.at(5) = touchArea(touchPoint.x, touchPoint.y, 90, 102, 157, 133);  // Number 5 on numpad
+    xNumpadElement.at(6) = touchArea(touchPoint.x, touchPoint.y, 168, 102, 231, 133); // Number 6 on numpad
+
+    xNumpadElement.at(7) = touchArea(touchPoint.x, touchPoint.y, 8, 53, 77, 88);    // Number 7 on numpad
+    xNumpadElement.at(8) = touchArea(touchPoint.x, touchPoint.y, 90, 50, 157, 88);  // Number 8 on numpad
+    xNumpadElement.at(9) = touchArea(touchPoint.x, touchPoint.y, 168, 50, 231, 88); // Number 9 on numpad
+    xNumpadElement.at(11) = touchArea(touchPoint.x, touchPoint.y, 250, 8, 307, 90); // CLR on numpad
 
     delay(200); // preventing bouncing, probably you have later a better solution
 
@@ -496,18 +511,17 @@ auto numpadTouch() -> byte
         return i;
       }
     }
-  
-    
-  }else
-  return 255; // return 255 if no touch input
+  }
+  else
+    return 255; // return 255 if no touch input
 }
 
 auto numPadHandler() -> void
 {
-  static bool xFinished = false; // true if enter was pressed
-  bool xCleared = false, xAbort = false;         // true if CLR was pressed
-  static String sTempValue = ""; // temporary value for editing
-  static String sTempValueOld = ""; // temporary value for editing
+  static bool xFinished = false;         // true if enter was pressed
+  bool xCleared = false, xAbort = false; // true if CLR was pressed
+  static String sTempValue = "";         // temporary value for editing
+  static String sTempValueOld = "";      // temporary value for editing
 
   // sVariableName
   // get numpad insert
@@ -560,15 +574,16 @@ auto numPadHandler() -> void
     break;
   }
 
-  if(sTempValue != sTempValueOld && sTempValue.length() < 6){
+  if (sTempValue != sTempValueOld && sTempValue.length() < 6)
+  {
     sTempValueOld = sTempValue;
     updateValue(sTempValue, "", sTempValue.length(), 2, ILI9341_BLACK, 190, 20);
   }
 
-  if(xCleared)
+  if (xCleared)
     sTempValue = "";
 
-  if(xAbort)
+  if (xAbort)
   {
     sTempValue = "";
     byPageId = byPageIdAfterNumpad;

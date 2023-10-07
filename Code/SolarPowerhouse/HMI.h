@@ -48,8 +48,10 @@ enum class guiElement{
 uint32_t uiTimeValueElapsed = 0;    // elapsed Time for value refreshing
 uint16_t uiPageRefreshTime = 100;   // Settings option: Target time (ms) for refreshing Page screens
 uint16_t uiValueRefreshTime = 1000; // Settings option: Target time (ms) for refreshing values on HMI
-uint16_t uiStandbyTargetTime = 20;  // Settings option: turn off display after x seconds
+uint16_t uiStandbyTargetTime = 20;  // TODO! Settings option: Target time (s) for standby mode, make it changable later
 uint8_t uiTftBrightness = 75;      // Settings option: brightness of TFT
+uint32_t uiTimeWithNoTouch = 0;     // Time since last touch
+
 
 
 constexpr static uint16_t TOUCH_X_MIN = 153;
@@ -59,7 +61,7 @@ constexpr static uint16_t TOUCH_Y_MAX = 3868;
 
 auto lcdInit() -> void;
 auto hmiLoop() -> void; // Call HMI Stuff here
-auto lcdStandbyHandler() -> void;
+auto StandbyHandler(uint32_t &uiElapsed, uint32_t uiTarget, bool xTouched) -> void;
 auto drawGradientBackground() -> void;
 auto showMainscreen() -> void;
 auto showSettingsMenu() -> void;
