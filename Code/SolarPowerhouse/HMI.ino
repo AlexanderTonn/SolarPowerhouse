@@ -20,7 +20,6 @@ auto lcdInit() -> void
   }
   tft.setRotation(3);
   // TODO: make brightness changeable
-  // TODO: draw screen in the background and after finishing turn on tft backlight
   analogWrite(TFT_LED, 75);
   Serial.println("ILI9341 and XPT2046 Init done!");
 }
@@ -65,6 +64,42 @@ auto hmiLoop() -> void
                        "Schalten, bei < ", guiElement::TEXT_INPUT, fSett_SwitchCurrentTarget,
                        true, false);
     }
+    else if(byPageId == CALIB_PV_VOLT && byPageId != byPageIdOld)
+    {
+      drawSettingsPage("Spannung PV",
+                       "Rohwert von", guiElement::TEXT_INPUT, iAdc2_01Low,
+                       "Rohwert bis", guiElement::TEXT_INPUT, iAdc2_01High,
+                       "Skaliert von", guiElement::TEXT_INPUT, iAdc2_01ScaledLow,
+                       "Skaliert bis", guiElement::TEXT_INPUT, iAdc2_01ScaledHigh,
+                       true, true);
+    }
+    else if(byPageId == CALIB_BAT_VOLT && byPageId != byPageIdOld)
+    {
+      drawSettingsPage("Spannung Batterie",
+                       "Rohwert von", guiElement::TEXT_INPUT, iAdc2_23Low,
+                       "Rohwert bis", guiElement::TEXT_INPUT, iAdc2_23High,
+                       "Skaliert von", guiElement::TEXT_INPUT, iAdc2_23ScaledLow,
+                       "Skaliert bis", guiElement::TEXT_INPUT, iAdc2_23ScaledHigh,
+                       true, true);
+    }
+    else if(byPageId == CALIB_PV_CURRENT && byPageId != byPageIdOld)
+    {
+      drawSettingsPage("Strom Laderegler",
+                       "Rohwert von", guiElement::TEXT_INPUT, iAdc1_23Low,
+                       "Rohwert bis", guiElement::TEXT_INPUT, iAdc1_23High,
+                       "Skaliert von", guiElement::TEXT_INPUT, iAdc1_23ScaledLow,
+                       "Skaliert bis", guiElement::TEXT_INPUT, iAdc1_23ScaledHigh,
+                       true, true);
+    }
+    else if(byPageId == CALIB_BAT_CURRENT && byPageId != byPageIdOld)
+    {
+      drawSettingsPage("Strom Panel 1",
+                       "Rohwert von", guiElement::TEXT_INPUT, iAdc1_01Low,
+                       "Rohwert bis", guiElement::TEXT_INPUT, iAdc1_01High,
+                       "Skaliert von", guiElement::TEXT_INPUT, iAdc1_01ScaledLow,
+                       "Skaliert bis", guiElement::TEXT_INPUT, iAdc1_01ScaledHigh,
+                       true, true);
+    }
     else if (byPageId == NUMPAD && byPageId != byPageIdOld)
     {
       drawNumpad(sVariableName);
@@ -89,7 +124,7 @@ auto hmiLoop() -> void
   }
 }
 
-// TODO: turn off background if no touch input
+// turn on / off background if no touch input
 auto StandbyHandler(uint32_t &uiElapsed, uint32_t uiTarget, bool xTouched) -> void
 {
   static bool xStandby = false;
@@ -177,6 +212,30 @@ auto showValues(byte byPage, byte byOption) -> void
     updateValue(fSett_TargetVoltageInverter, "V", 5, 2, ILI9341_BLACK, 225, 85);
     updateValue(fSett_TargetVoltageMppt, "V", 5, 2, ILI9341_BLACK, 225, 120);
     updateValue(fSett_SwitchCurrentTarget, "A", 5, 2, ILI9341_BLACK, 225, 155);
+    break;
+  case CALIB_PV_VOLT:
+    updateValue(iAdc2_23Low, "", 5, 2, ILI9341_BLACK, 225, 50);
+    updateValue(iAdc2_23High, "", 5, 2, ILI9341_BLACK, 225, 85);
+    updateValue(iAdc2_23ScaledLow, "V", 5, 2, ILI9341_BLACK, 225, 120);
+    updateValue(iAdc2_23ScaledHigh, "V", 5, 2, ILI9341_BLACK, 225, 155);
+    break;
+  case CALIB_BAT_VOLT:
+    updateValue(iAdc2_01Low, "", 5, 2, ILI9341_BLACK, 225, 50);
+    updateValue(iAdc2_01High, "", 5, 2, ILI9341_BLACK, 225, 85);
+    updateValue(iAdc2_01ScaledLow, "V", 5, 2, ILI9341_BLACK, 225, 120);
+    updateValue(iAdc2_01ScaledHigh, "V", 5, 2, ILI9341_BLACK, 225, 155);
+    break;
+  case CALIB_PV_CURRENT:
+    updateValue(iAdc1_01Low, "", 5, 2, ILI9341_BLACK, 225, 50);
+    updateValue(iAdc1_01High, "", 5, 2, ILI9341_BLACK, 225, 85);
+    updateValue(iAdc1_01ScaledLow, "A", 5, 2, ILI9341_BLACK, 225, 120);
+    updateValue(iAdc1_01ScaledHigh, "A", 5, 2, ILI9341_BLACK, 225, 155);
+    break;
+  case CALIB_BAT_CURRENT:
+    updateValue(iAdc1_23Low, "", 5, 2, ILI9341_BLACK, 225, 50);
+    updateValue(iAdc1_23High, "", 5, 2, ILI9341_BLACK, 225, 85);
+    updateValue(iAdc1_23ScaledLow, "A", 5, 2, ILI9341_BLACK, 225, 120);
+    updateValue(iAdc1_23ScaledHigh, "A", 5, 2, ILI9341_BLACK, 225, 155);
     break;
   default:
     Serial.println("Error: Page not found");
@@ -281,14 +340,14 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
 
     bool xSettingsTouched = touchArea(x, y, 256, 192, 291, 224);  // Settings btn:
     bool xConrolLogicTouched = touchArea(x, y, 46, 88, 282, 117); // Settings: Control Logic btn
+    bool xCalibTouched = touchArea(x, y, 37, 137, 282, 166);     // Settings: Calibration btn
+    
     if (byPageId == MAIN && xSettingsTouched)
-    {
       byPageId = SETTINGS;
-    }
     else if (byPageId == SETTINGS && xConrolLogicTouched)
-    {
       byPageId = SETT_PV_SWITCHING1;
-    }
+    else if (byPageId == SETTINGS && xCalibTouched)
+      byPageId = CALIB_PV_VOLT;
     // Settings: PV-Switching Page
     else if (byPageId == SETT_PV_SWITCHING1)
     {
@@ -357,7 +416,138 @@ auto detectTouch(uint16_t x, uint16_t y, byte &byPageId) -> void
         sVariableName = "Schalten, bei < [A]";
       }
     }
-
+    else if (byPageId == CALIB_BAT_VOLT)
+    {
+      byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_VOLT;
+        sVariableName = "Rohwert von";
+      }
+      else if (byGuiElement == 2)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_VOLT;
+        sVariableName = "Rohwert bis";
+      }
+      else if (byGuiElement == 3)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_VOLT;
+        sVariableName = "Skaliert von [V]";
+      }
+      else if (byGuiElement == 4)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_VOLT;
+        sVariableName = "Skaliert bis [V]";
+      }
+    }
+    else if (byPageId == CALIB_PV_VOLT)
+    {
+      byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_VOLT;
+        sVariableName = "Rohwert von";
+      }
+      else if (byGuiElement == 2)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_VOLT;
+        sVariableName = "Rohwert bis";
+      }
+      else if (byGuiElement == 3)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_VOLT;
+        sVariableName = "Skaliert von [V]";
+      }
+      else if (byGuiElement == 4)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_VOLT;
+        sVariableName = "Skaliert bis [V]";
+      }
+    }
+    else if (byPageId == CALIB_BAT_CURRENT)
+    {
+      byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_CURRENT;
+        sVariableName = "Rohwert von";
+      }
+      else if (byGuiElement == 2)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_CURRENT;
+        sVariableName = "Rohwert bis";
+      }
+      else if (byGuiElement == 3)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_CURRENT;
+        sVariableName = "Skaliert von [A]";
+      }
+      else if (byGuiElement == 4)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_BAT_CURRENT;
+        sVariableName = "Skaliert bis [A]";
+      }
+    }
+    else if (byPageId == CALIB_PV_CURRENT)
+    {
+       byte byGuiElement = touchSettingsPage(x, y,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            guiElement::TEXT_INPUT,
+                                            true);
+      if (byGuiElement == 1)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_CURRENT;
+        sVariableName = "Rohwert von";
+      }
+      else if (byGuiElement == 2)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_CURRENT;
+        sVariableName = "Rohwert bis";
+      }
+      else if (byGuiElement == 3)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_CURRENT;
+        sVariableName = "Skaliert von [A]";
+      }
+      else if (byGuiElement == 4)
+      {
+        byPageId = NUMPAD;
+        byPageIdAfterNumpad = CALIB_PV_CURRENT;
+        sVariableName = "Skaliert bis [A]";
+      }
+    }
     // Home Btn pressed
     if (byPageId > 1 && byPageId != NUMPAD && touchArea(x, y, 147, 19, 183, 46))
     {
@@ -594,22 +784,49 @@ auto numPadHandler() -> void
   if (xFinished)
   {
     if (sVariableName == "Schaltabstand [s]")
-    {
       uiSett_PVswitchingDelay = sTempValue.toInt();
-    }
     if (sVariableName == "Inverter, ab > [V]")
-    {
       fSett_TargetVoltageInverter = sTempValue.toFloat();
-    }
     if (sVariableName == "Batterie, ab < [V]")
-    {
       fSett_TargetVoltageMppt = sTempValue.toFloat();
-    }
     if (sVariableName == "Schalten, bei < [A]")
-    {
       fSett_SwitchCurrentTarget = sTempValue.toFloat();
-    }
+    if (sVariableName == "Rohwert von" && byPageIdAfterNumpad == CALIB_BAT_VOLT)
+      iAdc2_01Low = sTempValue.toInt();
+    if (sVariableName == "Rohwert bis" && byPageIdAfterNumpad == CALIB_BAT_VOLT)
+      iAdc2_01High = sTempValue.toInt();
+    if (sVariableName == "Skaliert von [V]" && byPageIdAfterNumpad == CALIB_BAT_VOLT)
+      iAdc2_01ScaledLow = sTempValue.toInt();
+    if (sVariableName == "Skaliert bis [V]" && byPageIdAfterNumpad == CALIB_BAT_VOLT)
+      iAdc2_01ScaledHigh = sTempValue.toInt();
+    if (sVariableName == "Rohwert von" && byPageIdAfterNumpad == CALIB_PV_VOLT)
+      iAdc2_23Low = sTempValue.toInt();
+    if (sVariableName == "Rohwert bis" && byPageIdAfterNumpad == CALIB_PV_VOLT )
+      iAdc2_23High = sTempValue.toInt();
+    if (sVariableName == "Skaliert von [V]" && byPageIdAfterNumpad == CALIB_PV_VOLT)
+      iAdc2_23ScaledLow = sTempValue.toInt();
+    if (sVariableName == "Skaliert bis [V]" && byPageIdAfterNumpad == CALIB_PV_VOLT)
+      iAdc2_23ScaledHigh = sTempValue.toInt();
+    if (sVariableName == "Rohwert von" && byPageIdAfterNumpad == CALIB_PV_CURRENT)
+      iAdc1_01Low = sTempValue.toInt();
+    if (sVariableName == "Rohwert bis" && byPageIdAfterNumpad == CALIB_PV_CURRENT)
+      iAdc1_01High = sTempValue.toInt();
+    if (sVariableName == "Skaliert von [A]" && byPageIdAfterNumpad == CALIB_PV_CURRENT)
+      iAdc1_01ScaledLow = sTempValue.toInt();
+    if (sVariableName == "Skaliert bis [A]" && byPageIdAfterNumpad == CALIB_PV_CURRENT)
+      iAdc1_01ScaledHigh = sTempValue.toInt();
+    if (sVariableName == "Rohwert von" && byPageIdAfterNumpad == CALIB_BAT_CURRENT)
+      iAdc1_23Low = sTempValue.toInt();
+    if (sVariableName == "Rohwert bis" && byPageIdAfterNumpad == CALIB_BAT_CURRENT)
+      iAdc1_23High = sTempValue.toInt();
+    if (sVariableName == "Skaliert von [A]" && byPageIdAfterNumpad == CALIB_BAT_CURRENT)
+      iAdc1_23ScaledLow = sTempValue.toInt();
+    if (sVariableName == "Skaliert bis [A]" && byPageIdAfterNumpad == CALIB_BAT_CURRENT)
+      iAdc1_23ScaledHigh = sTempValue.toInt();
+
+
     sVariableName = "";
+    sTempValueOld = "";
     xFinished = false;
     byPageId = byPageIdAfterNumpad;
     byPageIdAfterNumpad = 0;
@@ -633,7 +850,7 @@ auto touchSettingsPage(uint16_t x, uint16_t y,
     break;
   // TODO!: Check whether Text Input have correct coordinates
   case guiElement::TEXT_INPUT:
-    if (x >= 213 && x <= 312 && y >= 40 && y <= 72)
+    if (x >= 221 && x <= 307 && y >= 175 && y <= 196)
       return 1;
     break;
 
@@ -681,10 +898,17 @@ auto touchSettingsPage(uint16_t x, uint16_t y,
   {
     // Previous Page
     if (x >= 94 && x <= 125 && y >= 16 && y <= 42)
-      byPageId -= 1;
+    {
+      byPageId--;
+      delay(100); //TODO: preventing bouncing, probably you have later a better solution
+    }
+      
     // Next Page
     if (x >= 199 && x <= 230 && y >= 16 && y <= 42 && byPageId < NUMPAD - 1)
-      byPageId += 1;
+    {
+      byPageId++;
+      delay(100); // TODO: preventing bouncing, probably you have later a better solution
+    }
 
     return 0;
   }

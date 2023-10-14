@@ -88,7 +88,7 @@ auto secondToMs(uint16_t uiS) -> uint16_t{
 auto fmap(float value, float in_min, float in_max, float out_min, float out_max) -> float
 {
   float fScaled = 0.0;
-  fScaled = out_min+(value-in_min)*((out_max-out_min)/(in_max-in_min));
+  fScaled = out_min+(value-out_min)*((out_max-out_min)/(in_max-in_min));
   return fScaled;
 
 }
