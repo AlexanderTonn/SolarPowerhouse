@@ -1,75 +1,87 @@
+// NTPClient - Version: Latest 
 
-#include "HMI_graphics.h"
-#include "controlLogic.h"
-#include "HMI.h"
-#include "ADC.h"
-#include "Util.h"
+
+
+
+// Core M7 is running following tasks:
+// - controlLogic
+// - Modbus RTU Communication to MPPT Charger
+
+#if defined(CORE_CM7)
+
+#include "CORE_M7.h"
+
+CORE_M7 mainCore; // create object of control class
 
 void setup()
 {
-  pinMode(TFT_CS, OUTPUT);
-  pinMode(TFT_DC, OUTPUT);
-  pinMode(TFT_SD_CS, OUTPUT);
-  pinMode(TFT_LED, OUTPUT);
-  pinMode(K1_INVERTER_DC, OUTPUT);
-  pinMode(K2_INVERTER_AC, OUTPUT);
-  pinMode(K3_MPPT_CHARGER, OUTPUT);
-  pinMode(TOUCH_CS, OUTPUT);
-  pinMode(TOUCH_IRQ, INPUT);
+  mainCore.init(); 
 
-  SPI.begin();
-  // SPI.beginTransaction(SPISettings(48000000, MSBFIRST, SPI_MODE0)); // 48MHz clock speed, more isn't possible with wifi1010
-  delay(1000);
-
-  Serial.begin(uiBaudrate);
   delay(1000); // 100ms was not enough for init
-  adsInit();
 
-  Wire.begin();
 
-  rtcInit();
-  // ds3231SetupHandler();
+  // TODO! Change it for using with Arduin Opta 
+  // rtcInit(); // 
 
-  lcdInit();
-
-  drawGradientBackground();
-
-  byPageId = MAIN;
 }
 
 void loop()
 {
-  // READING INPUTS
 
-  if (!xSett_ignoreCurrent)
-  {
-    if (byModeActual == INVERTER_MODE)
-    {
-      fCurrInverter = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_0_1, uiInverterSamples, 100, fCurrInverter);
-    }
-    else if (byModeActual == BATTERY_MODE)
-    {
-      fCurrMppt = sctMeasuringAds1115(ads1, adsInput::ADS_INPUT_2_3, uiMpptSamples, 100, fCurrMppt);
-    }
-  }else
-  {
-    fCurrInverter = 0.0;
-    fCurrMppt = 0.0;
-  }
+  mainCore.readInputs();
+  mainCore.readModbusRtu();
+  mainCore.controlLogic();
+  mainCore.writeSharedMemory();
+  // TODO!: First tests without relay switching
+  // control.writeOutputs();
 
-  fBatteryVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_0_1, voltRange::VOLT_0_30);
-  fSolarVoltage = voltMeasuringAds1115(ads2, adsInput::ADS_INPUT_2_3, voltRange::VOLT_0_50);
-
-  // CONTROL LOGIC
-  controlLogic();
-
-  // Set Outputs
-  if (xPv1OnInverter)
-    pv1OnInverter();
-  if (xPv1OnMppt)
-    pv1OnMppt();
-
-  // HMI
-  hmiTouch();
-  hmiLoop();
 }
+
+// CORE M4 is running following tasks:
+// - Arduin IoT Cloud
+// - Future: Modbus RTU to HMI 
+#elif defined(CORE_CM4)
+
+#include "CORE_M4.h"
+
+CORE_M4 secondCore; // create object of cloud class
+
+
+void setup() {
+  // Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  // This delay gives the chance to wait for a Serial Monitor without blocking if none is found
+  delay(1500); 
+
+  // Defined in thingProperties.h
+  initProperties();
+
+  // Connect to Arduino IoT Cloud
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  
+  /*
+     The following function allows you to obtain more information
+     related to the state of network and IoT Cloud connection and errors
+     the higher number the more granular information you’ll get.
+     The default is 0 (only errors).
+     Maximum is 4
+ */
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();
+  
+  delay(1000);
+  
+  secondCore.init();
+}
+
+void loop() {
+  ArduinoCloud.update();
+  secondCore.getVarsFromSharedMemory();
+  // Your code here 
+  
+  
+}
+
+#endif
+
+
