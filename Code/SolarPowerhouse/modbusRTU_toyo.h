@@ -1,49 +1,53 @@
 #ifndef MODBUSRTU_TOYO_H
 #define MODBUSRTU_TOYO_H
 
-#include <ArduinoRS485.h> // https://www.arduino.cc/reference/en/libraries/arduinors485/
+#include <ArduinoRS485.h>  // https://www.arduino.cc/reference/en/libraries/arduinors485/
 #include <ArduinoModbus.h> // https://www.arduino.cc/reference/en/libraries/arduinomodbus/
-
+#include <array>
+#include "Util.h"
 class ModbusRTU_Toyo
 {
-    private:
+private:
+    auto convertToASCII(String s) -> String;
 
-     auto convertToASCII(String s) -> String;
-     auto hexToDec(uint16_t uiHex) -> uint16_t;
-     auto hexToFlo(uint16_t uiHex) -> float;
-
-     enum class debugSettings
-     {
-         NONE,
-         PRINT_RAW,
-         PRINT_POLL_ERROR,
-         PRINT_WRITE_ERROR
-     };
-     enum class bytePos
-     {
-        LOW_BYTE,
-        HIGH_BYTE
-     };
-     template <typename T>
-     auto printDebug(debugSettings dSetting, T debugVariable, String sFunction) -> void;
-
-     auto selectByte(bytePos pos, uint16_t uiInput) -> uint8_t;
-
-    public:
-
-    enum class debugLevel
+    enum class debugSettings
     {
         NONE,
-        ACTIVE
+        PRINT_RAW,
+        PRINT_POLL_ERROR,
+        PRINT_WRITE_ERROR,
+        PRINT_WRONG_VALUE_INPUT,
     };
+    enum class bytePos
+    {
+        LOW_BYTE,
+        HIGH_BYTE
+    };
+
+    /**
+     * @brief internal option for choosing values
+     */
+    enum class description
+    {
+        CONTROLLER_INFOS,
+        SYS_INFO
+    };
+
+    template <typename T>
+    auto printDebug(debugSettings dSetting, T debugVariable, String sFunction) -> void;
+
+    auto selectByte(bytePos pos, uint16_t uiInput) -> uint8_t;
+
+public:
+
     enum class status
     {
         OFF,
         ON
     };
-    enum class edited 
+    enum class edited
     {
-        RAW, 
+        RAW,
         EDITED
     };
     enum class chargeAndLoadStates
@@ -56,49 +60,75 @@ class ModbusRTU_Toyo
         OTHER
     };
 
-    auto init(uint16_t baudrate) -> bool; // init ModbusRTU 
-    auto getSysVoltAndCurrent(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> String; 
-    auto getProductModel(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> String; 
-    auto getSwVersion(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> String; 
-    auto getHwVersion(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> String; 
-    auto getSn(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE, edited edit = edited::RAW) -> String;  
-    
-    auto getBatSoC(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint8_t; 
-    auto getBatVolt (uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getBatCurr (uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getBatSurTemp(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint8_t;
-    auto getDevTemp(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint8_t;
-    auto getLoadVolt(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getLoadCurr(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getLoadPwr(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getSolarVolt(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getSolarCurr(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getSolarPwr(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto setLoadState(uint8_t uiDevice, status set, debugLevel dLevel = debugLevel::NONE) -> void;
-    auto getBatMinVoltToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getBatMaxVoltToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getMaxChargCurrToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getMaxLoadCurrToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> float;
-    auto getMaxChargPwrToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getMaxLoadPwrToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getChargAhToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getLoadAhToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getPwrGenerationToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getPwrConsumptionToday(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getTotalDaysOfOperation(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getTotalNoOverDischarges(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getTotalNoFullCharges(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint16_t;
-    auto getTotalAmpHoursCharged(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint32_t;
-    auto getTotalAmpHoursDrawn(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint32_t;
-    auto getCumulativeKwhGeneration(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint32_t;
-    auto getCumulativeKwhDrawn(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> uint32_t;
-    auto getLoadChargeStateBits(uint8_t uiDevice, debugLevel dLevel = debugLevel::NONE) -> String;
+private:
+    static constexpr std::size_t sizeControllerInfos = 35;
+    std::array<uint16_t, sizeControllerInfos> uiReadBuffer = {0};
 
-    //TODO!
+    auto writeToStruct(description desc) -> void;
 
+    template <std::size_t size>
+    auto parseControllerInfos(std::array<uint16_t, size> uiBuf) -> void;
 
+public:
+    enum class debugMode
+    {
+        NONE,
+        ACTIVE
+    };
+    struct toyoInfo
+    {
+        uint8_t uiBatSoC;
+        float fBatVolt;
+        float fBatCurr;
+        uint8_t uiBatSurTemp;
+        uint8_t uiDevTemp;
+        float fLoadVolt;
+        float fLoadCurr;
+        uint16_t uiLoadPwr;
+        float fSolarVolt;
+        float fSolarCurr;
+        uint16_t uiSolarPwr;
+        chargeAndLoadStates loadState;
+        float fBatMinVoltToday;
+        float fBatMaxVoltToday;
+        float fMaxChargCurrToday;
+        float fMaxLoadCurrToday;
+        uint16_t uiMaxChargPwrToday;
+        uint16_t uiMaxLoadPwrToday;
+        uint16_t uiChargAhToday;
+        uint16_t uiLoadAhToday;
+        uint16_t uiPwrGenerationToday;
+        uint16_t uiPwrConsumptionToday;
+        uint16_t uiTotalDaysOfOperation;
+        uint16_t uiTotalNoOverDischarges;
+        uint16_t uiTotalNoFullCharges;
+        uint32_t uiTotalAmpHoursCharged;
+        uint32_t uiTotalAmpHoursDrawn;
+        uint32_t uiCumulativeKwhGeneration;
+        uint32_t uiCumulativeKwhDrawn;
+        bool xLoadOutputActive; 
+    };
+    toyoInfo controllerInformation;
 
+    // Enum class for choosing values to write
+    enum class toyoWritableValues
+    {
+        LOAD_OUTPUT
+    };
+
+    auto init(const uint16_t baudrate) -> bool; // init ModbusRTU
+    auto update(uint16_t uiReadInterval) -> void;
+
+    template <std::size_t size>
+    auto readContrInfo(uint16_t uiDevice,
+                       uint16_t uiStartAddress,
+                       std::array<uint16_t, size> &uiData,
+                       debugMode dLevel = debugMode::NONE) -> bool;
+
+    auto writeContrInfo(uint16_t uiDevice,
+                        toyoWritableValues targetVariable,
+                        uint16_t uiValue,
+                        debugMode dLevel = debugMode::NONE) -> void;
 };
-
 
 #endif // RS485_HANDLER_H

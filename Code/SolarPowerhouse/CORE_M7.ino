@@ -6,26 +6,10 @@ auto CORE_M7::init() -> void
   pinMode(K1_INVERTER_DC_SIDE, OUTPUT);
   pinMode(K2_MPPT_CHARGER, OUTPUT);
   pinMode(K3_INVERTER_AC_SIDE, OUTPUT);
-
-  mpptCharger.init(9600);
-  ipc.memoryInit();
-}
-
-// Read Inputs from MPPT Charger through Modbus RTU
-auto CORE_M7::readInputs() -> void
-{
-  static uint32_t uiMillisElapsed = millis();
-
-  // get each second data from mppt charger
-  if (functionTrigger(uiMillisElapsed, 1000))
-  {
-    process.fBatteryVoltage = mpptCharger.getBatVolt(uiToyoDeviceId);
-    process.fSolarCurrent = mpptCharger.getSolarCurr(uiToyoDeviceId);
-  }
 }
 
 // Set Relays on Mppt Mode
-void CORE_M7::pv1OnMppt(debugLevel dLevel)
+void CORE_M7::pv1OnMppt(debugMode dLevel)
 {
   static std::array<uint32_t, 3> uiMillisElapsed = {0};
   static bool xGetMillis = true;
@@ -37,29 +21,29 @@ void CORE_M7::pv1OnMppt(debugLevel dLevel)
     xGetMillis = false;
   }
 
-  if (functionTrigger(uiMillisElapsed.at(0), settings.uiPVswitchingDelay * 1000))
+  if (util.functionTrigger(uiMillisElapsed.at(0), settings.uiPVswitchingDelay * 1000))
   {
-    digitalWrite(LED_D2, LOW);
+    digitalWrite(K3_LED, LOW);
     digitalWrite(K3_INVERTER_AC_SIDE, LOW);
   }
 
-  if (functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
+  if (util.functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
   {
-    digitalWrite(LED_D0, LOW);
+    digitalWrite(K1_LED, LOW);
     digitalWrite(K1_INVERTER_DC_SIDE, LOW);
   }
 
-  if (functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
+  if (util.functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
   {
-    digitalWrite(LED_D1, HIGH);
-    digitalWrite(K3_INVERTER_AC_SIDE, HIGH);
+    digitalWrite(K2_LED, HIGH);
+    digitalWrite(K2_MPPT_CHARGER, HIGH);
     byModeOld = byModeActual;
     xPv1OnMppt = false;
     xGetMillis = true;
   }
 }
 // Set Relays on Inverter Mode
-void CORE_M7::pv1OnInverter(debugLevel dLevel)
+void CORE_M7::pv1OnInverter(debugMode dLevel)
 {
   static std::array<uint32_t, 3> uiMillisElapsed = {0};
   static bool xGetMillis = true;
@@ -71,14 +55,19 @@ void CORE_M7::pv1OnInverter(debugLevel dLevel)
     xGetMillis = false;
   }
 
-  if (functionTrigger(uiMillisElapsed.at(0), settings.uiPVswitchingDelay * 1000))
-    digitalWrite(K2_MPPT_CHARGER, LOW);
-
-  if (functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
-    digitalWrite(K1_INVERTER_DC_SIDE, HIGH);
-
-  if (functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
+  if (util.functionTrigger(uiMillisElapsed.at(0), settings.uiPVswitchingDelay * 1000))
   {
+     digitalWrite(K2_LED, LOW);
+     digitalWrite(K2_MPPT_CHARGER, LOW);
+  }
+  if (util.functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
+  {
+    digitalWrite(K1_LED, HIGH);
+    digitalWrite(K1_INVERTER_DC_SIDE, HIGH);
+  }
+  if (util.functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
+  {
+    digitalWrite(K3_LED, HIGH);
     digitalWrite(K3_INVERTER_AC_SIDE, HIGH);
     byModeOld = byModeActual;
     xPv1OnInverter = false;
@@ -110,16 +99,16 @@ auto CORE_M7::SettingsPvSwitching(
 // ##############
 auto CORE_M7::controlLogic() -> void
 {
-  bool xTrigBatteryFull = edgeDetection(process.fBatteryVoltage,
-                                        process.fTrigBatteryFullPrevious,
-                                        edgeType::RISING_EDGE,
+  bool xTrigBatteryFull = util.edgeDetection(mpptCharger.controllerInformation.fBatVolt,
+                                        fTrigBatteryFullPrevious,
+                                        atUtilities::edgeType::RISING_EDGE,
                                         settings.fTargetVoltageInverter); // Battery is full after reaching 100%
-  bool xTrigBatteryEmpty = edgeDetection(process.fBatteryVoltage,
-                                         process.fTrigBatteryEmptyPrevious,
-                                         edgeType::FALLING_EDGE,
+  bool xTrigBatteryEmpty = util.edgeDetection(mpptCharger.controllerInformation.fBatVolt,
+                                         fTrigBatteryEmptyPrevious,
+                                         atUtilities::edgeType::FALLING_EDGE,
                                          settings.fTargetVoltageMppt); // Battery should charged if dropped down to 50%
 
-  auto xCheckDayChange = functionTrigger(uiMillisCheckDayChange, 3600000); // 1 hour
+  auto xCheckDayChange = util.functionTrigger(uiMillisCheckDayChange, 3600000); // 1 hour
 
   // CONTROL LOGIC
   // Set Relays on Mppt if day changed
@@ -129,7 +118,7 @@ auto CORE_M7::controlLogic() -> void
     Serial.println("xCheckDayChange: " + String(xCheckDayChange));
     // Set Relays on Mppt if day changed
     auto xDayChanged = ntp.rtcCheckDayChange(settings.xResetDay);
-    if (xDayChanged == true && process.fSolarCurrent <= settings.fSwitchCurrentTarget || xFirstCycle)
+    if (xDayChanged == true && mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget || xFirstCycle)
     {
       byModeActual = BATTERY_MODE;
       xPv1OnMppt = true;
@@ -147,31 +136,31 @@ auto CORE_M7::controlLogic() -> void
     if (auOperationMode == NORMAL)
     {
       // Switching from mppt to inverter
-      if (xTrigBatteryFull || process.xSwitchLaterOnInverter)
+      if (xTrigBatteryFull || xSwitchLaterOnInverter)
       {
-        if (process.fSolarCurrent <= settings.fSwitchCurrentTarget)
+        if (mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget)
         {
           byModeActual = INVERTER_MODE;
           xPv1OnInverter = true;
           xPv1OnMppt = false;
-          process.xSwitchLaterOnInverter = false;
+          xSwitchLaterOnInverter = false;
         }
         else
-          process.xSwitchLaterOnInverter = true;
+          xSwitchLaterOnInverter = true;
       }
       // Switching from Invertwe to mppt charger
       // if current is certainly to high then try to switch later if the current is low
-      else if (xTrigBatteryEmpty == true || process.xSwitchLaterOnMppt == true)
+      else if (xTrigBatteryEmpty == true || xSwitchLaterOnMppt == true)
       {
-        if (process.fSolarCurrent <= settings.fSwitchCurrentTarget)
+        if (mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget)
         {
           byModeActual = BATTERY_MODE;
           xPv1OnMppt = true;
           xPv1OnInverter = false;
-          process.xSwitchLaterOnMppt = false;
+          xSwitchLaterOnMppt = false;
         }
         else
-          process.xSwitchLaterOnMppt = true;
+          xSwitchLaterOnMppt = true;
       }
     }
     break;
@@ -202,42 +191,26 @@ auto CORE_M7::writeOutputs() -> void
   if (xPv1OnMppt)
     pv1OnMppt();
 }
-// Read Inputs from MPPT Charger through Modbus RTU
-auto CORE_M7::readModbusRtu() -> void
+/**
+ * @brief
+ * write Modbus RTU data to clodu variables
+ * @param none
+ * @return none
+ */
+auto CORE_M7::writeCloudVariables() -> void
 {
-  static uint32_t uiMillisElapsed = millis();
+  fBatteryCurrent = mpptCharger.controllerInformation.fBatCurr;
+  fBatteryVoltage = mpptCharger.controllerInformation.fBatVolt;
+  fSolarCurrent = mpptCharger.controllerInformation.fSolarCurr;
+  fSolarVoltage = mpptCharger.controllerInformation.fSolarVolt;
+  fBatTodayVoltMin = mpptCharger.controllerInformation.fBatMinVoltToday;
+  fBatTodayVoltMax = mpptCharger.controllerInformation.fBatMaxVoltToday;
+  fBatTodayCurrMax = mpptCharger.controllerInformation.fMaxChargCurrToday;
+  uiCurrentSolarPower = mpptCharger.controllerInformation.uiSolarPwr;
+  uiBatTodayPwrMax = mpptCharger.controllerInformation.uiMaxChargPwrToday;
+  uiBatTodayPwrGeneration = mpptCharger.controllerInformation.uiPwrGenerationToday;
+  uiBatteryTemperature = mpptCharger.controllerInformation.uiBatSurTemp;
+  uiMpptChargerTemperature = mpptCharger.controllerInformation.uiDevTemp;
+  xMpptChargerLoadActive = mpptCharger.controllerInformation.xLoadOutputActive;
 
-  // get each second data from mppt charger
-  if (functionTrigger(uiMillisElapsed, 1000))
-  {
-    process.fBatteryVoltage = mpptCharger.getBatVolt(uiToyoDeviceId);
-    process.fSolarCurrent = mpptCharger.getSolarCurr(uiToyoDeviceId);
-    informative.fSolarVoltage = mpptCharger.getSolarVolt(uiToyoDeviceId);
-    informative.fBatTodayVoltMin = mpptCharger.getBatMinVoltToday(uiToyoDeviceId);
-    informative.fBatTodayVoltMax = mpptCharger.getBatMaxVoltToday(uiToyoDeviceId);
-    informative.fBatTodayCurrMax = mpptCharger.getMaxChargCurrToday(uiToyoDeviceId);
-    informative.uiCurrentSolarPower = mpptCharger.getSolarPwr(uiToyoDeviceId);
-    informative.uiBatTodayPwrMax = mpptCharger.getMaxChargPwrToday(uiToyoDeviceId);
-    informative.uiBatTodayPwrGeneration = mpptCharger.getPwrGenerationToday(uiToyoDeviceId);
-    informative.uiBatteryTemperature = mpptCharger.getBatSurTemp(uiToyoDeviceId);
-    informative.uiMpptChargerTemperature = mpptCharger.getDevTemp(uiToyoDeviceId);
-  }
-}
-// Write variables to shared memory for CORE M4
-auto CORE_M7::writeSharedMemory() -> void
-{
-  static uint32_t uiMillisElapsed = millis();
-
-  if (functionTrigger(uiMillisElapsed, 1000))
-  {
-    ipc.writeSharedFloat(process.fBatteryVoltage, sharedMemory::floatId::BATTERY_VOLTAGE);
-    ipc.writeSharedFloat(process.fSolarCurrent, sharedMemory::floatId::SOLAR_CURRENT);
-    ipc.writeSharedFloat(informative.fSolarVoltage, sharedMemory::floatId::SOLAR_VOLTAGE);
-    ipc.writeSharedFloat(informative.fBatTodayVoltMin, sharedMemory::floatId::BAT_TODAY_VOLT_MIN);
-    ipc.writeSharedFloat(informative.fBatTodayVoltMax, sharedMemory::floatId::BAT_TODAY_VOLT_MAX);
-    ipc.writeSharedFloat(informative.fBatTodayCurrMax, sharedMemory::floatId::BAT_TODAY_CURR_MAX);
-    ipc.writeSharedUnsignedInt(informative.uiCurrentSolarPower, sharedMemory::uiId::SOLAR_POWER);
-    ipc.writeSharedUnsignedInt(informative.uiBatTodayPwrMax, sharedMemory::uiId::BAT_TODAY_PWR_MAX);
-    ipc.writeSharedUnsignedInt(informative.uiBatTodayPwrGeneration, sharedMemory::uiId::BAT_TODAY_PWR_GENERATION);
-  }
 }

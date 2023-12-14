@@ -6,7 +6,7 @@
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 
-//https://www.tutorialspoint.com/c_standard_library/time_h.htm
+// https://www.tutorialspoint.com/c_standard_library/time_h.htm
 
 class rtc
 {
@@ -14,28 +14,27 @@ class rtc
     NTPClient timeClient;
 
 public:
-    rtc() : timeClient(ntpUdp, "pool.ntp.org", -6*3600, 0) {}
+    rtc() : timeClient(ntpUdp, "pool.ntp.org", -6 * 3600, 0) {}
 
 private:
+public:
     enum class debugInformations
     {
         NONE,
         ACTIVE
     };
-    
-public:
-  enum class timeOption
-  {
-    SECONDS,
-    MINUTES,
-    HOURS,
-    DAY_OF_MONTH,
-    MONTH,
-    YEAR,
-    DAY_OF_WEEK,
-    DAY_OF_YEAR,
-    DAYLIGHT_SAVING_TIME
-  };
+    enum class timeOption
+    {
+        SECONDS,
+        MINUTES,
+        HOURS,
+        DAY_OF_MONTH,
+        MONTH,
+        YEAR,
+        DAY_OF_WEEK,
+        DAY_OF_YEAR,
+        DAYLIGHT_SAVING_TIME
+    };
 
     bool xDateChanged = false; // true, if Date has changed
 
@@ -45,7 +44,7 @@ public:
     auto updateTime(debugInformations info = debugInformations::NONE) -> void;
     auto getLocalTime() -> String;
     auto getLocalHour() -> uint8_t;
-    
+
     auto getTimeData(timeOption to) -> uint16_t;
 };
 

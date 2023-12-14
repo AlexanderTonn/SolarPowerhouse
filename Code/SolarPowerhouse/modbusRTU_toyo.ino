@@ -1,14 +1,40 @@
+/**
+ * @file modbusRTU_toyo.ino
+ * @author https://github.com/AlexanderTonn
+ * @brief Handling the communication with the Toyo Solar MPPT Charger
+ * @brief similiar Products labeled as: SR-MLXXXX (e.g. SR-ML4860)
+ * @version 0.1
+ * @date 2023-12-11
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 
 #include "modbusRTU_toyo.h"
-
-auto ModbusRTU_Toyo::init(uint16_t baud) -> bool
+/**
+ * @brief Modbus RTU Init
+ * ! Calculate preDelay and postDelay in microseconds as per Modbus RTU Specification
+ * MODBUS over serial line specification and implementation guide V1.02
+ * Paragraph 2.5.1.1 MODBUS Message RTU Framing
+ * https://modbus.org/docs/Modbus_over_serial_line_V1_02.pdf
+ * @param baud
+ * @return true
+ * @return false
+ */
+auto ModbusRTU_Toyo::init(const uint16_t baud) -> bool
 {
+    const auto bitduration{1.f / baud};
+    const auto preDelayBR{bitduration * 10.0f * 3.5f * 1e6};
+    const auto postDelayBR{bitduration * 10.0f * 3.5f * 1e6};
     if (!Serial)
     {
         Serial.begin(baud);
     }
+    Serial.println("Starting Modbus RTU Client! ");
+    RS485.setDelays(preDelayBR, postDelayBR);
 
-    if (!ModbusRTUClient.begin(baud))
+    // Starting client
+    if (!ModbusRTUClient.begin(baud, SERIAL_8N2))
     {
         Serial.println("Failed to start Modbus RTU Client!");
         return false;
@@ -16,825 +42,166 @@ auto ModbusRTU_Toyo::init(uint16_t baud) -> bool
     else
         return true;
 }
-
-// Get the selected System Voltage and Current
-auto ModbusRTU_Toyo::getSysVoltAndCurrent(uint8_t uiDevice, debugLevel dLevel) -> String
+/**
+ * @brief
+ * Reading the Modbus RTU registers which giving informative data about the device
+ * @tparam size
+ * @param uiDevice  Modbus Device ID / Slave ID
+ * @param uiStartAddress  No. of the first register
+ * @param uiData std::array for buffering data
+ * @param dLevel Serial Print of raw data
+ * @return true or false
+ */
+template <std::size_t size>
+auto ModbusRTU_Toyo::readContrInfo(uint16_t uiDevice,
+                                   uint16_t uiStartAddress,
+                                   std::array<uint16_t, size> &uiData,
+                                   debugMode dLevel) -> bool
 {
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x0A))
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-        else
-        {
-            if (ModbusRTUClient.available())
-            {
-                uint16_t uiBuffer;
-                while (ModbusRTUClient.available())
-                    uiBuffer = ModbusRTUClient.read();
-
-                uint8_t uiLowByte = (uiBuffer >> 8) & 0xFF;
-                uint8_t uiHighByte = uiBuffer & 0xFF;
-
-                String sResult = "System voltage: " + String(uiHighByte) + " V / System Current: " + String(uiLowByte) + " A";
-
-                if (dLevel == debugLevel::ACTIVE)
-                {
-                    printDebug(debugSettings::PRINT_RAW, uiLowByte, __func__);
-                    printDebug(debugSettings::PRINT_RAW, uiHighByte, "");
-                }
-                return sResult;
-            }
-        }
-}
-// Get the name of the used mppt charger
-// 8 Registers to read (16 bytes)
-// the values are stored in following ASCII format (example):
-// ’’, ' ', ' ', ' ', 'M', 'T', '4', '8', '3' , '0' , ' ', ' ', ' ', ' ', ' ', ' '
-auto ModbusRTU_Toyo::getProductModel(uint8_t uiDevice, debugLevel dLevel) -> String
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x0C, 8))
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-        else
-        {
-            String sRead;
-            while (ModbusRTUClient.available())
-            {
-                sRead += ModbusRTUClient.read();
-            }
-            String sResult = convertToASCII(sRead);
-
-            return sResult;
-        }
-}
-// Reading software version
-// highest byte is not used
-auto ModbusRTU_Toyo::getSwVersion(uint8_t uiDevice, debugLevel dLevel) -> String
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x014, 2))
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-        else
-        {
-            Array<uint16_t, 2> uiBuffer;
-            byte byCounter = 0;
-            while (ModbusRTUClient.available())
-            {
-                uiBuffer.at(byCounter) = ModbusRTUClient.read();
-                byCounter++;
-            }
-
-            // Parsing
-            // High Byte 0x00 of first register is not used
-            uint8_t uiFirstVersionNo = (uiBuffer.at(0) >> 8) & 0xFF;
-            uint8_t uiThirdVersionNo = (uiBuffer.at(1) >> 8) & 0xFF;
-            uint8_t uiSecondVersionNo = uiBuffer.at(1) & 0xFF;
-
-            if (dLevel == debugLevel::ACTIVE)
-            {
-                printDebug(debugSettings::PRINT_RAW, uiFirstVersionNo, __func__);
-                printDebug(debugSettings::PRINT_RAW, uiSecondVersionNo, "");
-                printDebug(debugSettings::PRINT_RAW, uiThirdVersionNo, "");
-            }
-
-            return "V" + String(uiFirstVersionNo) + "." + String(uiSecondVersionNo) + "." + String(uiThirdVersionNo);
-        }
-}
-auto ModbusRTU_Toyo::getHwVersion(uint8_t uiDevice, debugLevel dLevel) -> String
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x016, 2))
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-        else
-        {
-            Array<uint16_t, 2> uiBuffer;
-            byte byCounter = 0;
-            while (ModbusRTUClient.available())
-            {
-                uiBuffer.at(byCounter) = ModbusRTUClient.read();
-                byCounter++;
-            }
-
-            // Parsing
-            // High Byte 0x00 of first register is not used
-            uint8_t uiFirstVersionNo = (uiBuffer.at(0) >> 8) & 0xFF;
-            uint8_t uiThirdVersionNo = (uiBuffer.at(1) >> 8) & 0xFF;
-            uint8_t uiSecondVersionNo = uiBuffer.at(1) & 0xFF;
-
-            if (dLevel == debugLevel::ACTIVE)
-            {
-                printDebug(debugSettings::PRINT_RAW, uiFirstVersionNo, __func__);
-                printDebug(debugSettings::PRINT_RAW, uiSecondVersionNo, "");
-                printDebug(debugSettings::PRINT_RAW, uiThirdVersionNo, "");
-            }
-
-            return "V" + String(uiFirstVersionNo) + "." + String(uiSecondVersionNo) + "." + String(uiThirdVersionNo);
-        }
-}
-// Get S/N
-// Format example: 1501FFFFH is the product serial number, indicating it's the 65535th (hexadecimal FFFFH) unit produced in Jan. of 2015
-// Decide with enum class whether you want to get the raw String or the parsed String
-auto ModbusRTU_Toyo::getSn(uint8_t uiDevice, debugLevel dLevel, edited edit) -> String
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x018, 2))
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-        else
-        {
-            Array<uint16_t, 2> uiBuffer;
-            byte byCounter = 0;
-            while (ModbusRTUClient.available())
-            {
-                uiBuffer.at(byCounter) = ModbusRTUClient.read();
-                byCounter++;
-            }
-
-            // Parsing
-            // uiBuffer.at(0) == Device no of the year in which the device was produced
-            uint8_t uiYear = (uiBuffer.at(0) >> 8) & 0xFF;
-            uint8_t uiMonth = uiBuffer.at(0) & 0xFF;
-            uint16_t uiDeviceNo = uiBuffer.at(1);
-
-            if (dLevel == debugLevel::ACTIVE)
-            {
-                printDebug(debugSettings::PRINT_RAW, uiYear, __func__);
-                printDebug(debugSettings::PRINT_RAW, uiMonth, "");
-                printDebug(debugSettings::PRINT_RAW, uiDeviceNo, "");
-            }
-
-            if (edit == edited::RAW)
-            {
-                return String(uiYear) + String(uiMonth) + String(uiDeviceNo);
-            }
-            else
-            {
-                return "Manufacturing year: 20" + String(uiYear) + " Month: " + String(uiMonth) + " Device No: " + String(uiDeviceNo);
-            }
-        }
-}
-
-// Battery SoC in decimal percent (0-100)
-// unit: %
-// Register 0x100
-auto ModbusRTU_Toyo::getBatSoC(uint8_t uiDevice, debugLevel dLevel) -> uint8_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x100))
+    if (!ModbusRTUClient.requestFrom(uiDevice, HOLDING_REGISTERS, uiStartAddress, sizeof(uiData) / 2))
     {
-        if (dLevel == debugLevel::ACTIVE)
+        if (dLevel == debugMode::ACTIVE)
             printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
+        return false;
     }
     else
     {
         uint16_t uiBuffer = 0;
+        byte byCounter = 0;
         while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return selectByte(bytePos::LOW_BYTE, uiBuffer);
-    }
-}
-
-// battery voltage
-// unit: V
-// Register 0x101
-auto ModbusRTU_Toyo::getBatVolt(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x101))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.1;
-    }
-}
-
-// Battery current
-// unit: A
-// Register: 0x102
-auto ModbusRTU_Toyo::getBatCurr(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x102))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.01;
-    }
-}
-// Battery surface temperature
-// if the figure turns out to be 800AH, then it indicates the battery's surface temperature is -10 °C
-// unit: °C
-// Register: 0x103, highbyte
-auto ModbusRTU_Toyo::getBatSurTemp(uint8_t uiDevice, debugLevel dLevel) -> uint8_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x103))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return selectByte(bytePos::LOW_BYTE, uiBuffer);
-    }
-}
-
-// Battery surface temperature
-// if the figure turns out to be 800AH, then it indicates the battery's surface temperature is -10 °C
-// unit: °C
-// Register: 0x103, Lowbyte
-auto ModbusRTU_Toyo::getDevTemp(uint8_t uiDevice, debugLevel dLevel) -> uint8_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x103))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return selectByte(bytePos::HIGH_BYTE, uiBuffer);
-    }
-}
-
-// Load Volt
-// unit: V
-// Register: 0x104
-auto ModbusRTU_Toyo::getLoadVolt(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x104))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.1;
-    }
-}
-
-// Load current
-// unit: A
-// Register: 0x105
-auto ModbusRTU_Toyo::getLoadCurr(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x105))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.01;
-    }
-}
-// Load power
-// unit: W
-// Register: 0x106
-auto ModbusRTU_Toyo::getLoadPwr(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x106))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// Solar Voltage
-// unit: V
-// Register: 0x107
-auto ModbusRTU_Toyo::getSolarVolt(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x107))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.1;
-    }
-}
-// Solar current
-// unit: A
-// Register: 0x108
-auto ModbusRTU_Toyo::getSolarCurr(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x108))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.01;
-    }
-}
-// Solar power
-// unit: W
-// Register: 0x109
-auto ModbusRTU_Toyo::getSolarPwr(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x109))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// Set load state
-// 0x00: Turn off load
-// 0x01: Turn on load
-// Register: 0x10A
-auto ModbusRTU_Toyo::setLoadState(uint8_t uiDevice, status set, debugLevel dLevel) -> void
-{
-    switch (set)
-    {
-    case status::OFF:
-        if (!ModbusRTUClient.holdingRegisterWrite(uiDevice, 0x10A, 0x00))
         {
-            if (dLevel == debugLevel::ACTIVE)
-                printDebug(debugSettings::PRINT_WRITE_ERROR, 0, __func__);
+            uiBuffer = ModbusRTUClient.read();
+            uiData.at(byCounter) = uiBuffer;
+
+            if (dLevel == debugMode::ACTIVE)
+                printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
+
+            byCounter++;
         }
-        else
-        {
-            if (dLevel == debugLevel::ACTIVE)
-                printDebug(debugSettings::PRINT_RAW, 0x00, __func__);
-        }
+        return true;
+    }
+}
+/**
+ * @brief depending of selected Option, the data is written to the struct
+ *
+ * @param desc
+ * @return none
+ */
+auto ModbusRTU_Toyo::writeToStruct(description desc) -> void
+{
+    switch (desc)
+    {
+    case description::CONTROLLER_INFOS:
+        parseControllerInfos(uiReadBuffer);
         break;
-    case status::ON:
-        if (!ModbusRTUClient.holdingRegisterWrite(uiDevice, 0x10A, 0x01))
-        {
-            if (dLevel == debugLevel::ACTIVE)
-                printDebug(debugSettings::PRINT_WRITE_ERROR, 0, __func__);
-        }
-        else
-        {
-            if (dLevel == debugLevel::ACTIVE)
-                printDebug(debugSettings::PRINT_RAW, 0x01, __func__);
-        }
+
+        // TODO!: ADD OTHER OPTIONS
+
+    default:
+        Serial.println("No valid Option for writeToStruct");
         break;
     }
 }
-// Get lowest battery voltage of today
-// unit: V
-// Register: 0x10B
-auto ModbusRTU_Toyo::getBatMinVoltToday(uint8_t uiDevice, debugLevel dLevel) -> float
+/**
+ * @brief Parsing Informative Controller data
+ * ! data of modbusregister from 0x100 to 0x11F
+ *
+ * @param uiBuf
+ * @return none
+ */
+template <std::size_t size>
+auto ModbusRTU_Toyo::parseControllerInfos(std::array<uint16_t, size> uiBuf) -> void
 {
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x10B))
+    controllerInformation.uiBatSoC = uiBuf.at(0);
+    controllerInformation.fBatVolt = static_cast<float>(uiBuf.at(1) * 0.1F);
+    controllerInformation.fBatCurr = static_cast<float>(uiBuf.at(2) * 0.01F);
+    uint16_t uiTemp = uiBuf.at(3);
+    controllerInformation.uiDevTemp = static_cast<uint16_t>(selectByte(bytePos::HIGH_BYTE, uiTemp));
+    controllerInformation.uiBatSurTemp = static_cast<uint16_t>(selectByte(bytePos::LOW_BYTE, uiTemp));
+    controllerInformation.fLoadVolt = static_cast<float>(uiBuf.at(4) * 0.1F);
+    controllerInformation.fLoadCurr = static_cast<float>(uiBuf.at(5) * 0.01F);
+    controllerInformation.uiLoadPwr = uiBuf.at(6);
+    controllerInformation.fSolarVolt = static_cast<float>(uiBuf.at(7) * 0.1F);
+    controllerInformation.fSolarCurr = static_cast<float>(uiBuf.at(8) * 0.01F);
+    controllerInformation.uiSolarPwr = uiBuf.at(9);
+    controllerInformation.fBatMinVoltToday = static_cast<float>(uiBuf.at(11) * 0.1F);
+    controllerInformation.fBatMaxVoltToday = static_cast<float>(uiBuf.at(12) * 0.1F);
+    controllerInformation.fMaxChargCurrToday = static_cast<float>(uiBuf.at(13) * 0.01F);
+    controllerInformation.fMaxLoadCurrToday = static_cast<float>(uiBuf.at(14) * 0.01F);
+    controllerInformation.uiMaxChargPwrToday = uiBuf.at(15);
+    controllerInformation.uiMaxLoadPwrToday = uiBuf.at(16);
+    controllerInformation.uiChargAhToday = uiBuf.at(17);
+    controllerInformation.uiLoadAhToday = uiBuf.at(18);
+    controllerInformation.uiPwrGenerationToday = uiBuf.at(19)/10000;
+    controllerInformation.uiPwrConsumptionToday = uiBuf.at(20)/10000;
+    controllerInformation.uiTotalDaysOfOperation = uiBuf.at(21);
+    controllerInformation.uiTotalNoOverDischarges = uiBuf.at(22);
+    controllerInformation.uiTotalAmpHoursCharged = uiBuf.at(23);
+    controllerInformation.uiTotalAmpHoursCharged += uiBuf.at(24) << 16; // adding high byte
+    controllerInformation.uiTotalAmpHoursDrawn = uiBuf.at(25);
+    controllerInformation.uiTotalAmpHoursDrawn += uiBuf.at(26) << 16; // adding high byte
+    // TODO!
+}
+/**
+ * @brief Read and Write to ModbusRTU
+ *
+ * @param uiReadInterval  How often should the controller be read in milliseconds
+ */
+auto ModbusRTU_Toyo::update(uint16_t uiReadInterval) -> void
+{
+    Serial.println("ModbusRTU_Toyo::" + String(__func__));
+    readContrInfo(1, 0x100, uiReadBuffer, debugMode::NONE);
+    writeToStruct(description::CONTROLLER_INFOS);
+}
+/**
+ * @brief Writing Holding Registers of Mppt Charger 
+ * !Function includes interceptions for preventing the insertion of wrong values
+ * 
+ * @param uiDevice 
+ * @param targetVariable 
+ * @param uiValue 
+ * @param dLevel 
+ */
+auto ModbusRTU_Toyo::writeContrInfo(uint16_t uiDevice,
+                                    toyoWritableValues targetVariable,
+                                    uint16_t uiValue,
+                                    debugMode dLevel) -> void
+{
+    switch (targetVariable)
     {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
+        // switching on the load output (on = 1, off = 0)
+    case toyoWritableValues::LOAD_OUTPUT:
+        if (uiValue > 1 || uiValue < 0)
+        {
+            printDebug(debugSettings::PRINT_WRONG_VALUE_INPUT, "Load Output only allows 0 or 1", __func__);
+            break;
+        }
+        else
+        {
+            if (!ModbusRTUClient.holdingRegisterWrite(uiDevice, 0x10A, uiValue))
+            {
+                if (dLevel == debugMode::ACTIVE)
+                    printDebug(debugSettings::PRINT_WRITE_ERROR, 0, __func__);
+            }
+        }   
+        break;
 
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.1;
+    default:
+        Serial.println("No valid Option for writeContrInfo");
+        break;
     }
 }
-// Get highest battery voltage of today
-// unit: V
-// Register: 0x10C
-auto ModbusRTU_Toyo::getBatMaxVoltToday(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x10C))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
 
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
+// ##############
+// #  TOOLS #
+// ##############
 
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.1;
-    }
-}
-// Get highest charging current of today
-// unit: A
-// Register: 0x10D
-auto ModbusRTU_Toyo::getMaxChargCurrToday(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x10D))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.01;
-    }
-}
-// Get highest load (discharge) current of today
-// unit: A
-// Register: 0x10E
-auto ModbusRTU_Toyo::getMaxLoadCurrToday(uint8_t uiDevice, debugLevel dLevel) -> float
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x10E))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        auto buffer = 0.0f;
-        while (ModbusRTUClient.available())
-            buffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, buffer, __func__);
-
-        return buffer * 0.01;
-    }
-}
-// Get highest charing power of today
-// unit: W
-// Register: 0x10F
-auto ModbusRTU_Toyo::getMaxChargPwrToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x10F))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// Get highest load (discharge) power of today
-// unit: W
-// Register: 0x110
-auto ModbusRTU_Toyo::getMaxLoadPwrToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x110))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// get charging ampere hours of today
-// unit: Ah
-// Register: 0x111
-auto ModbusRTU_Toyo::getChargAhToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x111))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// get load (discharge) ampere hours of today
-// unit: Ah
-// Register: 0x112
-auto ModbusRTU_Toyo::getLoadAhToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x112))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// get power generation of today
-// unit: kWh
-// Register: 0x113
-auto ModbusRTU_Toyo::getPwrGenerationToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x113))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// get power consumption of today
-// unit: kWh
-// Register: 0x114
-auto ModbusRTU_Toyo::getPwrConsumptionToday(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x114))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_RAW, uiBuffer, __func__);
-
-        return uiBuffer;
-    }
-}
-// total Number of operating days
-// unit: days
-// Register: 0x115
-auto ModbusRTU_Toyo::getTotalDaysOfOperation(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x115))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-}
-// get total numbers of over discharges
-// unit: times
-// Register: 0x116
-auto ModbusRTU_Toyo::getTotalNoOverDischarges(uint8_t uiDevice, debugLevel dLevel) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x116))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-}
-// get total numbers of full charges
-// unit: times
-// Register: 0x117
-auto ModbusRTU_Toyo::getTotalNoFullCharges(uint8_t uiDevice, debugLevel dLevel ) -> uint16_t
-{
-    if (!ModbusRTUClient.holdingRegisterRead(uiDevice, 0x117))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-        uint16_t uiBuffer = 0;
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-}
-// get Total charging amp hours
-// unit: Ah
-// Register: 0x118
-auto ModbusRTU_Toyo::getTotalAmpHoursCharged(uint8_t uiDevice, debugLevel dLevel) -> uint32_t
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x118, 2))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-
-        uint32_t uiBuffer = 0;
-
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-}
-// get Total discharge amp hours
-// unit: Ah
-// Register: 0x11A
-auto ModbusRTU_Toyo::getTotalAmpHoursDrawn(uint8_t uiDevice, debugLevel dLevel) -> uint32_t
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x11A, 2))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-
-        uint32_t uiBuffer = 0;
-
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-}
-// get cumulative kWh generation
-// unit: kWh
-// Register: 0x11C
-auto ModbusRTU_Toyo::getCumulativeKwhGeneration(uint8_t uiDevice, debugLevel dLevel ) -> uint32_t
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x11C, 2))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-
-        uint32_t uiBuffer = 0;
-
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-
-}
-// get cumulative kWh drawn
-// unit: kWh
-// Register: 0x11E
-auto ModbusRTU_Toyo::getCumulativeKwhDrawn(uint8_t uiDevice, debugLevel dLevel ) -> uint32_t
-{
-    if (!ModbusRTUClient.requestFrom(uiDevice, 0x11E, 2))
-    {
-        if (dLevel == debugLevel::ACTIVE)
-            printDebug(debugSettings::PRINT_POLL_ERROR, 0, __func__);
-    }
-    else
-    {
-
-        uint32_t uiBuffer = 0;
-
-        while (ModbusRTUClient.available())
-            uiBuffer = ModbusRTUClient.read();
-
-        return uiBuffer;
-    }
-
-}
-// get charge and load status
-// unit: kWh
-// Register: 0x11C
-
-
+/**
+ * @brief
+ *
+ * @param s
+ * @return String
+ */
 auto ModbusRTU_Toyo::convertToASCII(String s) -> String
 {
     String sResult;
@@ -846,17 +213,6 @@ auto ModbusRTU_Toyo::convertToASCII(String s) -> String
     return sResult;
 }
 
-// Hex to Decimal conversion
-auto ModbusRTU_Toyo::hexToDec(uint16_t uiHex) -> uint16_t
-{
-    return strtoul(String(uiHex, HEX).c_str(), NULL, 16);
-}
-// hex to float conversion
-auto ModbusRTU_Toyo::hexToFlo(uint16_t uiHex) -> float
-{
-    uint16_t uiConverted = strtoul(String(uiHex, HEX).c_str(), NULL, 16);
-    return static_cast<float>(uiConverted);
-}
 
 // Print debug output on serial monitor depending of the passed settings
 template <typename T>
@@ -868,22 +224,31 @@ auto ModbusRTU_Toyo::printDebug(debugSettings dSetting, T debugVariable, String 
         Serial.println("Raw Value of " + sFunctionName + " :" + String(debugVariable));
         break;
     case debugSettings::PRINT_POLL_ERROR:
-        Serial.print("Failed to request while" + sFunctionName + " | Error Code : ");
+        Serial.print("Failed to request while " + sFunctionName + " | Error Code : ");
         Serial.println(ModbusRTUClient.lastError());
         break;
     case debugSettings::PRINT_WRITE_ERROR:
-        Serial.print("Failed to write while" + sFunctionName + " | Error Code : ");
+        Serial.print("Failed to write while " + sFunctionName + " | Error Code : ");
         Serial.println(ModbusRTUClient.lastError());
         break;
+    case debugSettings::PRINT_WRONG_VALUE_INPUT:
+        Serial.println("Wrong value input in function" + sFunctionName + " | Note:  " + String(debugVariable));
+        break;
+    
     default:
         Serial.println("No debug setting selected!");
         break;
     }
 }
 
-// Select the high or low byte of a 16 bit value
-// Low Byte: 0x00FF
-// High Byte: 0xFF00
+/**
+ * @brief Select the high or low byte of a 16 bit value
+ * ! Low Byte: 0x00FF
+ * ! High Byte: 0xFF00
+ * @param pos
+ * @param uiInput
+ * @return uint8_t
+ */
 auto ModbusRTU_Toyo::selectByte(bytePos pos, uint16_t uiInput) -> uint8_t
 {
     switch (pos)

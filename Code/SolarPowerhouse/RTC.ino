@@ -10,15 +10,15 @@ auto rtc::init() -> void
 {
 
   // checking for Hardware Security Module (HSM)
+  Serial.println("Starting ECCX08 crypto chip");
   if(!ECCX08.begin())
   {
-    Serial.println("Serial.println");
+    Serial.println("Init of ECCX08 failed");
   }
-  
   timeClient.begin();
+  Serial.println("Time Client started");
   setNtpTime();
-  updateTime();
-  
+  updateTime(debugInformations::ACTIVE);
   
 }
 /**
