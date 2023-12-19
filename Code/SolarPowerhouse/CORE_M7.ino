@@ -112,11 +112,9 @@ auto CORE_M7::controlLogic() -> void
 
   // CONTROL LOGIC
   // Set Relays on Mppt if day changed
-
   if (xCheckDayChange || xFirstCycle)
   {
     Serial.println("xCheckDayChange: " + String(xCheckDayChange));
-    // Set Relays on Mppt if day changed
     auto xDayChanged = ntp.rtcCheckDayChange(settings.xResetDay);
     if (xDayChanged == true && mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget || xFirstCycle)
     {
@@ -212,5 +210,10 @@ auto CORE_M7::writeCloudVariables() -> void
   uiBatteryTemperature = mpptCharger.controllerInformation.uiBatSurTemp;
   uiMpptChargerTemperature = mpptCharger.controllerInformation.uiDevTemp;
   xMpptChargerLoadActive = mpptCharger.controllerInformation.xLoadOutputActive;
+  uiTotalAmpHoursCharged = mpptCharger.controllerInformation.uiTotalAmpHoursCharged;
+  uiTotalDaysOfOperation = mpptCharger.controllerInformation.uiTotalDaysOfOperation;
+  uiTotalNoOverDischarges = mpptCharger.controllerInformation.uiTotalNoOverDischarges;
+  uiChargAhToday = mpptCharger.controllerInformation.uiChargAhToday;
+  uiCumulativeKwhGeneration = mpptCharger.controllerInformation.uiCumulativeKwhGeneration;
 
 }

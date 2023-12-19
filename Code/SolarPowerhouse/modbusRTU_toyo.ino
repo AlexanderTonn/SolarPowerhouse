@@ -132,15 +132,18 @@ auto ModbusRTU_Toyo::parseControllerInfos(std::array<uint16_t, size> uiBuf) -> v
     controllerInformation.uiMaxLoadPwrToday = uiBuf.at(16);
     controllerInformation.uiChargAhToday = uiBuf.at(17);
     controllerInformation.uiLoadAhToday = uiBuf.at(18);
-    controllerInformation.uiPwrGenerationToday = uiBuf.at(19)/10000;
-    controllerInformation.uiPwrConsumptionToday = uiBuf.at(20)/10000;
+    controllerInformation.uiPwrGenerationToday = uiBuf.at(19);
+    controllerInformation.uiPwrConsumptionToday = uiBuf.at(20);
     controllerInformation.uiTotalDaysOfOperation = uiBuf.at(21);
     controllerInformation.uiTotalNoOverDischarges = uiBuf.at(22);
-    controllerInformation.uiTotalAmpHoursCharged = uiBuf.at(23);
-    controllerInformation.uiTotalAmpHoursCharged += uiBuf.at(24) << 16; // adding high byte
-    controllerInformation.uiTotalAmpHoursDrawn = uiBuf.at(25);
-    controllerInformation.uiTotalAmpHoursDrawn += uiBuf.at(26) << 16; // adding high byte
+    controllerInformation.uiTotalAmpHoursCharged = uiBuf.at(24); 
+    controllerInformation.uiTotalAmpHoursCharged += uiBuf.at(23) << 16; // adding high byte
+    controllerInformation.uiTotalAmpHoursDrawn += uiBuf.at(26) ;
+    controllerInformation.uiTotalAmpHoursDrawn = uiBuf.at(25) << 16; // adding high byte
+    controllerInformation.uiCumulativeKwhGeneration += uiBuf.at(28) ;
+    controllerInformation.uiCumulativeKwhGeneration = uiBuf.at(27) << 16; // adding high byte
     // TODO!
+
 }
 /**
  * @brief Read and Write to ModbusRTU
@@ -149,7 +152,6 @@ auto ModbusRTU_Toyo::parseControllerInfos(std::array<uint16_t, size> uiBuf) -> v
  */
 auto ModbusRTU_Toyo::update(uint16_t uiReadInterval) -> void
 {
-    Serial.println("ModbusRTU_Toyo::" + String(__func__));
     readContrInfo(1, 0x100, uiReadBuffer, debugMode::NONE);
     writeToStruct(description::CONTROLLER_INFOS);
 }

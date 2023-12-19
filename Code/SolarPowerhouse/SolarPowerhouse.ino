@@ -23,20 +23,19 @@ void setup()
 
 void loop()
 {
-  static  uint32_t milRtuOld = 0, milCloudOld = 0;
-  if (util.functionTrigger(milRtuOld, 1000))
+  
+  
+  if (util.functionTrigger(mainCore.milRtuOld, 1000))
   {
     mainCore.mpptCharger.update(5000);
-  }
-  if (util.functionTrigger(milCloudOld, 5000))
-  {
     mainCore.writeCloudVariables();
-    ArduinoCloud.update();
   }
+  if (util.functionTrigger(mainCore.milTimeUpdateOld, mainCore.uiNtpTimeInterval))
+    mainCore.ntp.updateTime(rtc::debugInformations::ACTIVE);
+  
+  ArduinoCloud.update();
   mainCore.controlLogic();
   mainCore.writeOutputs(); 
-   
-
 }
 
 

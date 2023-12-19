@@ -5,19 +5,29 @@
 #include <mbed_mktime.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
+#include "opta_info.h"
 
 // https://www.tutorialspoint.com/c_standard_library/time_h.htm
 
+#if __has_include("opta_info.h")
+        
+        #define GET_OPTA_OTP_BOARD_INFO
+        OptaBoardInfo* info;
+        OptaBoardInfo* boardInfo();
+ #endif
+
 class rtc
 {
+    private:
     EthernetUDP ntpUdp;
+
+    byte byMacAddress[6] = {0x00 , 0x00, 0x00, 0x00, 0x00, 0x00}; // MAC Address for Ethernet, only bad C-syntax possible
+    constexpr static uint16_t PORT = 8888;
+
+    public:
     NTPClient timeClient;
+    rtc() : timeClient(ntpUdp, "pool.ntp.org", 3600, 0) {}
 
-public:
-    rtc() : timeClient(ntpUdp, "pool.ntp.org", -6 * 3600, 0) {}
-
-private:
-public:
     enum class debugInformations
     {
         NONE,
@@ -37,6 +47,7 @@ public:
     };
 
     bool xDateChanged = false; // true, if Date has changed
+    
 
     auto init() -> void;
     auto setNtpTime() -> void;
@@ -45,7 +56,7 @@ public:
     auto getLocalTime() -> String;
     auto getLocalHour() -> uint8_t;
 
-    auto getTimeData(timeOption to) -> uint16_t;
+    auto getTimeData(timeOption to, debugInformations debug = debugInformations::NONE) -> uint16_t;
 };
 
 #endif

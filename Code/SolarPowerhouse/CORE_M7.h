@@ -43,6 +43,9 @@ class CORE_M7
     public:
     ModbusRTU_Toyo mpptCharger;  
     rtc ntp;
+
+    uint32_t milRtuOld = 0, milTimeUpdateOld = 0; // for timing
+    constexpr static uint16_t uiNtpTimeInterval = 1000 * 60 * 1; // 1 minute
     
     // struct for settings
     struct settings

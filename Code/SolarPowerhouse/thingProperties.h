@@ -10,34 +10,66 @@ const char GATEWAY[] = SECRET_OPTIONAL_GATEWAY;
 const char NETMASK[] = SECRET_OPTIONAL_NETMASK;
 */
 
+String sDebug0;
+String sDebug1;
+String sDebug10;
+String sDebug2;
+String sDebug3;
+String sDebug4;
+String sDebug5;
+String sDebug6;
+String sDebug7;
+String sDebug8;
+String sDebug9;
 CloudElectricCurrent fBatteryCurrent;
 CloudElectricCurrent fBatTodayCurrMax;
 CloudElectricCurrent fSolarCurrent;
+CloudElectricCurrent uiChargAhToday;
+CloudElectricCurrent uiTotalAmpHoursCharged;
 CloudElectricPotential fBatteryVoltage;
 CloudElectricPotential fBatTodayVoltMax;
 CloudElectricPotential fBatTodayVoltMin;
 CloudElectricPotential fSolarVoltage;
 CloudTemperatureSensor uiBatteryTemperature;
 CloudTemperatureSensor uiMpptChargerTemperature;
+int uiTotalDaysOfOperation;
+int uiTotalNoOverDischarges;
 CloudPower uiBatTodayPwrGeneration;
 CloudPower uiBatTodayPwrMax;
+CloudPower uiCumulativeKwhGeneration;
 CloudPower uiCurrentSolarPower;
 bool xMpptChargerLoadActive;
 
 void initProperties(){
 
-  ArduinoCloud.addProperty(fBatteryCurrent, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug0, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug1, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug10, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug2, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug3, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug4, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug5, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug6, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug7, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug8, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(sDebug9, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(fBatteryCurrent, READ, 5 * SECONDS, NULL);
   ArduinoCloud.addProperty(fBatTodayCurrMax, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(fSolarCurrent, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(fBatteryVoltage, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(fSolarCurrent, READ, 5 * SECONDS, NULL);
+  ArduinoCloud.addProperty(uiChargAhToday, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(uiTotalAmpHoursCharged, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(fBatteryVoltage, READ, 5 * SECONDS, NULL);
   ArduinoCloud.addProperty(fBatTodayVoltMax, READ, ON_CHANGE, NULL);
   ArduinoCloud.addProperty(fBatTodayVoltMin, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(fSolarVoltage, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(uiBatteryTemperature, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(uiMpptChargerTemperature, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(fSolarVoltage, READ, 5 * SECONDS, NULL);
+  ArduinoCloud.addProperty(uiBatteryTemperature, READ, 60 * SECONDS, NULL);
+  ArduinoCloud.addProperty(uiMpptChargerTemperature, READ, 60 * SECONDS, NULL);
+  ArduinoCloud.addProperty(uiTotalDaysOfOperation, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(uiTotalNoOverDischarges, READ, ON_CHANGE, NULL);
   ArduinoCloud.addProperty(uiBatTodayPwrGeneration, READ, ON_CHANGE, NULL);
   ArduinoCloud.addProperty(uiBatTodayPwrMax, READ, ON_CHANGE, NULL);
-  ArduinoCloud.addProperty(uiCurrentSolarPower, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(uiCumulativeKwhGeneration, READ, ON_CHANGE, NULL);
+  ArduinoCloud.addProperty(uiCurrentSolarPower, READ, 5 * SECONDS, NULL);
   ArduinoCloud.addProperty(xMpptChargerLoadActive, READ, ON_CHANGE, NULL);
 
 }
