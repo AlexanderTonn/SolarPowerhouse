@@ -3,9 +3,10 @@
 
 #include "pinDefinitions.h"
 #include "modbusRTU_toyo.h"
-#include "Util.h"
+#include "atUtility.h"
 #include "rtc.h"
-#include <Array.h>  // https://github.com/janelia-arduino/Array
+
+
 #include "thingProperties.h"
 
 
@@ -38,11 +39,19 @@ class CORE_M7
     NO_DAY_CHANGE
     };
 
+    constexpr static  byte BAT_SOC_ARRAY_SIZE = 15;
+    Array <float, BAT_SOC_ARRAY_SIZE> aSocVoltage24 = {{20.0, 22.4, 24.0, 25.2, 25.6, 25.8, 26.0, 26.1, 26.2, 26.4, 26.6, 26.8, 27.0, 27.6, 29.2}};
+    Array <float, BAT_SOC_ARRAY_SIZE> aSoCPercentage = {{0.0, 5.0, 9.5, 14.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 99.0, 99.5, 100.0}};
+    Array <bool, 4> aRelayStates = {false}; // 0 = K1, 1 = K2, 2 = K3, 3 = K4
+
     auto SettingsPvSwitching(bool xOnInverter, bool xOnMppt) -> operationMode;     // checking available options for switching PV1
+    auto calculateSoC() -> float;    // calculating SoC
+    auto warnLowBatVoltage() -> bool;   // warning if battery voltage is low
 
     public:
     ModbusRTU_Toyo mpptCharger;  
     rtc ntp;
+    atUtilities util;
 
     uint32_t milRtuOld = 0, milTimeUpdateOld = 0; // for timing
     constexpr static uint16_t uiNtpTimeInterval = 1000 * 60 * 1; // 1 minute
@@ -58,6 +67,7 @@ class CORE_M7
         float fTargetVoltageInverter = 28.20;  // Target Voltage for switching to Inverter
         float fTargetVoltageMppt = 26.00;      // Target Voltage for switching back to Mppt
         float fSwitchCurrentTarget = 1.00;       // Threshold Current when is switching allowed
+        float fTargetWarningVoltage = 25.80;    // Target Voltage for warning if battery voltage is low
     };
     settings settings;
 
@@ -77,5 +87,7 @@ class CORE_M7
     auto writeCloudVariables() -> void;   // writing variables to cloud variables
 
 };
+
+CORE_M7 mainCore; // create object of control class
 
 #endif

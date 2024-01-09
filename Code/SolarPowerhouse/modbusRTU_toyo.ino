@@ -21,7 +21,7 @@
  * @return true
  * @return false
  */
-auto ModbusRTU_Toyo::init(const uint16_t baud) -> bool
+auto ModbusRTU_Toyo::init(const uint16_t baud, ModbusRTU_Toyo::language lang) -> bool
 {
     const auto bitduration{1.f / baud};
     const auto preDelayBR{bitduration * 10.0f * 3.5f * 1e6};
@@ -32,6 +32,19 @@ auto ModbusRTU_Toyo::init(const uint16_t baud) -> bool
     }
     Serial.println("Starting Modbus RTU Client! ");
     RS485.setDelays(preDelayBR, postDelayBR);
+
+    switch (lang)
+    {
+    case ModbusRTU_Toyo::language::EN:
+        uiLanguage = static_cast<uint8_t>(language::EN);
+        break;
+    case ModbusRTU_Toyo::language::DE:
+        uiLanguage = static_cast<uint8_t>(language::DE);
+        break;
+    default:
+        Serial.println("Passed Language Index is not existing!");
+        break;
+    }
 
     // Starting client
     if (!ModbusRTUClient.begin(baud, SERIAL_8N2))
@@ -55,7 +68,7 @@ auto ModbusRTU_Toyo::init(const uint16_t baud) -> bool
 template <std::size_t size>
 auto ModbusRTU_Toyo::readContrInfo(uint16_t uiDevice,
                                    uint16_t uiStartAddress,
-                                   std::array<uint16_t, size> &uiData,
+                                   Array<uint16_t, size> &uiData,
                                    debugMode dLevel) -> bool
 {
     if (!ModbusRTUClient.requestFrom(uiDevice, HOLDING_REGISTERS, uiStartAddress, sizeof(uiData) / 2))
@@ -110,14 +123,14 @@ auto ModbusRTU_Toyo::writeToStruct(description desc) -> void
  * @return none
  */
 template <std::size_t size>
-auto ModbusRTU_Toyo::parseControllerInfos(std::array<uint16_t, size> uiBuf) -> void
+auto ModbusRTU_Toyo::parseControllerInfos(Array<uint16_t, size> uiBuf) -> void
 {
     controllerInformation.uiBatSoC = uiBuf.at(0);
     controllerInformation.fBatVolt = static_cast<float>(uiBuf.at(1) * 0.1F);
     controllerInformation.fBatCurr = static_cast<float>(uiBuf.at(2) * 0.01F);
     uint16_t uiTemp = uiBuf.at(3);
-    controllerInformation.uiDevTemp = static_cast<uint16_t>(selectByte(bytePos::HIGH_BYTE, uiTemp));
-    controllerInformation.uiBatSurTemp = static_cast<uint16_t>(selectByte(bytePos::LOW_BYTE, uiTemp));
+    controllerInformation.uiDevTemp = static_cast<uint16_t>(mainCore.util.byteSelect16(atUtilities::bytePos::HIGH_BYTE, uiTemp));
+    controllerInformation.uiBatSurTemp = static_cast<uint16_t>(mainCore.util.byteSelect16(atUtilities::bytePos::LOW_BYTE, uiTemp));
     controllerInformation.fLoadVolt = static_cast<float>(uiBuf.at(4) * 0.1F);
     controllerInformation.fLoadCurr = static_cast<float>(uiBuf.at(5) * 0.01F);
     controllerInformation.uiLoadPwr = uiBuf.at(6);
@@ -136,14 +149,16 @@ auto ModbusRTU_Toyo::parseControllerInfos(std::array<uint16_t, size> uiBuf) -> v
     controllerInformation.uiPwrConsumptionToday = uiBuf.at(20);
     controllerInformation.uiTotalDaysOfOperation = uiBuf.at(21);
     controllerInformation.uiTotalNoOverDischarges = uiBuf.at(22);
-    controllerInformation.uiTotalAmpHoursCharged = uiBuf.at(24); 
-    controllerInformation.uiTotalAmpHoursCharged += uiBuf.at(23) << 16; // adding high byte
-    controllerInformation.uiTotalAmpHoursDrawn += uiBuf.at(26) ;
-    controllerInformation.uiTotalAmpHoursDrawn = uiBuf.at(25) << 16; // adding high byte
-    controllerInformation.uiCumulativeKwhGeneration += uiBuf.at(28) ;
-    controllerInformation.uiCumulativeKwhGeneration = uiBuf.at(27) << 16; // adding high byte
+    controllerInformation.uiTotalNoFullCharges = uiBuf.at(23);
+    controllerInformation.uiTotalAmpHoursCharged = ((uint32_t)uiBuf.at(24)) << 16 | uiBuf.at(25);
+    controllerInformation.uiTotalAmpHoursDrawn = ((uint32_t)uiBuf.at(26) << 16) | uiBuf.at(27);
+    controllerInformation.uiCumulativeKwhGeneration = ((uint32_t)uiBuf.at(28) << 16) | uiBuf.at(29);
+    controllerInformation.uiCumulativeKwhDrawn = ((uint32_t)uiBuf.at(30) << 16) | uiBuf.at(31);
+    controllerInformation.xLoadOutputActive = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(32), 15, false);
+    controllerInformation.uiLoadBrightness = mainCore.util.selectMultipleBits16(static_cast<uint16_t>(mainCore.util.byteSelect16(atUtilities::bytePos::HIGH_BYTE, uiBuf.at(32))), 0, 6);
+    controllerInformation.uiChargingState = mainCore.util.byteSelect16(atUtilities::bytePos::LOW_BYTE, uiBuf.at(32));
+    controllerInformation.sChargingState = translateChargingState(controllerInformation.uiChargingState, uiLanguage);
     // TODO!
-
 }
 /**
  * @brief Read and Write to ModbusRTU
@@ -156,13 +171,13 @@ auto ModbusRTU_Toyo::update(uint16_t uiReadInterval) -> void
     writeToStruct(description::CONTROLLER_INFOS);
 }
 /**
- * @brief Writing Holding Registers of Mppt Charger 
+ * @brief Writing Holding Registers of Mppt Charger
  * !Function includes interceptions for preventing the insertion of wrong values
- * 
- * @param uiDevice 
- * @param targetVariable 
- * @param uiValue 
- * @param dLevel 
+ *
+ * @param uiDevice
+ * @param targetVariable
+ * @param uiValue
+ * @param dLevel
  */
 auto ModbusRTU_Toyo::writeContrInfo(uint16_t uiDevice,
                                     toyoWritableValues targetVariable,
@@ -185,7 +200,7 @@ auto ModbusRTU_Toyo::writeContrInfo(uint16_t uiDevice,
                 if (dLevel == debugMode::ACTIVE)
                     printDebug(debugSettings::PRINT_WRITE_ERROR, 0, __func__);
             }
-        }   
+        }
         break;
 
     default:
@@ -215,7 +230,6 @@ auto ModbusRTU_Toyo::convertToASCII(String s) -> String
     return sResult;
 }
 
-
 // Print debug output on serial monitor depending of the passed settings
 template <typename T>
 auto ModbusRTU_Toyo::printDebug(debugSettings dSetting, T debugVariable, String sFunctionName) -> void
@@ -236,33 +250,77 @@ auto ModbusRTU_Toyo::printDebug(debugSettings dSetting, T debugVariable, String 
     case debugSettings::PRINT_WRONG_VALUE_INPUT:
         Serial.println("Wrong value input in function" + sFunctionName + " | Note:  " + String(debugVariable));
         break;
-    
+
     default:
         Serial.println("No debug setting selected!");
         break;
     }
 }
-
 /**
- * @brief Select the high or low byte of a 16 bit value
- * ! Low Byte: 0x00FF
- * ! High Byte: 0xFF00
- * @param pos
- * @param uiInput
- * @return uint8_t
+ * @brief translate the no. of the charging state to the corresponding string
+ *
+ * @param uiChargingState no. of the charging state
+ * @param uiLang language no of ModbusRTU_Toyo::language
+ * @return String
  */
-auto ModbusRTU_Toyo::selectByte(bytePos pos, uint16_t uiInput) -> uint8_t
+auto ModbusRTU_Toyo::translateChargingState(uint8_t uiChargingState, uint8_t uiLang ) -> String
 {
-    switch (pos)
+    String sResult;
+    switch (uiLang)
     {
-    case bytePos::LOW_BYTE:
-        return uiInput & 0xFF;
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::EN) : 
+        switch (uiChargingState)
+        {
+        case 0:
+            sResult = "Charging deactivated";
+            break;
+        case 1:
+            sResult = "Charging activated";
+            break;
+        case 2:
+            sResult = "MPPT charging";
+            break;
+        case 3:
+            sResult = "Equalizing charging";
+            break;
+        case 4:
+            sResult = "Boost charging";
+            break;
+        case 5:
+            sResult = "Floating charging";
+            break;
+        case 6:
+            sResult = "Current limiting";
+            break;
+        }
         break;
-    case bytePos::HIGH_BYTE:
-        return (uiInput >> 8) & 0xFF;
-        break;
-    default:
-        return 0xFF;
+
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::DE) :
+        switch (uiChargingState)
+        {
+        case 0:
+            sResult = "Laden deaktiviert";
+            break;
+        case 1:
+            sResult = "Laden aktiviert";
+            break;
+        case 2:
+            sResult = "MPPT Laden";
+            break;
+        case 3:
+            sResult = "Ausgleichsladen";
+            break;
+        case 4:
+            sResult = "Boost Laden";
+            break;
+        case 5:
+            sResult = "Float Laden";
+            break;
+        case 6:
+            sResult = "Strombegrenzung";
+            break;
+        }
         break;
     }
+    return sResult;
 }

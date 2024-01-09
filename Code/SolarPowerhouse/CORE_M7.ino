@@ -25,18 +25,21 @@ void CORE_M7::pv1OnMppt(debugMode dLevel)
   {
     digitalWrite(K3_LED, LOW);
     digitalWrite(K3_INVERTER_AC_SIDE, LOW);
+    aRelayStates[2] = false;
   }
 
   if (util.functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
   {
     digitalWrite(K1_LED, LOW);
     digitalWrite(K1_INVERTER_DC_SIDE, LOW);
+    aRelayStates[0] = false;
   }
 
   if (util.functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
   {
     digitalWrite(K2_LED, HIGH);
     digitalWrite(K2_MPPT_CHARGER, HIGH);
+    aRelayStates[1] = true;
     byModeOld = byModeActual;
     xPv1OnMppt = false;
     xGetMillis = true;
@@ -59,16 +62,19 @@ void CORE_M7::pv1OnInverter(debugMode dLevel)
   {
      digitalWrite(K2_LED, LOW);
      digitalWrite(K2_MPPT_CHARGER, LOW);
+     aRelayStates[1] = false;
   }
   if (util.functionTrigger(uiMillisElapsed.at(1), settings.uiPVswitchingDelay * 1000 * 2))
   {
     digitalWrite(K1_LED, HIGH);
     digitalWrite(K1_INVERTER_DC_SIDE, HIGH);
+    aRelayStates[0] = true;
   }
   if (util.functionTrigger(uiMillisElapsed.at(2), settings.uiPVswitchingDelay * 1000 * 3))
   {
     digitalWrite(K3_LED, HIGH);
     digitalWrite(K3_INVERTER_AC_SIDE, HIGH);
+    aRelayStates[2] = true;
     byModeOld = byModeActual;
     xPv1OnInverter = false;
     xGetMillis = true;
@@ -215,5 +221,45 @@ auto CORE_M7::writeCloudVariables() -> void
   uiTotalNoOverDischarges = mpptCharger.controllerInformation.uiTotalNoOverDischarges;
   uiChargAhToday = mpptCharger.controllerInformation.uiChargAhToday;
   uiCumulativeKwhGeneration = mpptCharger.controllerInformation.uiCumulativeKwhGeneration;
+  fBatSoC = calculateSoC();
+  xRelayState1 = aRelayStates[0];
+  xRelayState2 = aRelayStates[1];
+  xRelayState3 = aRelayStates[2];
+  xRelayState4 = aRelayStates[3];
+  xSettPVonInverter = settings.xPVonInverter;
+  xSettPVonMppt = settings.xPVonMppt;
+  xSettResetDay = settings.xResetDay;
+  iSettPVswitchingDelay = settings.uiPVswitchingDelay;
+  xSettIgnoreCurrent = settings.xignoreCurrent;
+  fSettTargetVoltageInverter = settings.fTargetVoltageInverter;
+  fSettTargetVoltageMppt = settings.fTargetVoltageMppt;
+  fSettSwitchCurrentTarget = settings.fSwitchCurrentTarget;
+  uiTotalNoFullCharges = mpptCharger.controllerInformation.uiTotalNoFullCharges;
+  xMpptChargerLoadActive = mpptCharger.controllerInformation.xLoadOutputActive;
+  sChargingState = mpptCharger.controllerInformation.sChargingState;
+  xSettIgnoreCurrent = settings.xignoreCurrent; 
+  xVoltageLow = warnLowBatVoltage();
 
+}
+/**
+ * @brief Calculate State of Charge depending of the voltage
+ * 
+ * @return float 
+ */
+auto CORE_M7::calculateSoC() -> float
+{
+  return util.fLinInterpolation(mpptCharger.controllerInformation.fBatVolt, aSocVoltage24, aSoCPercentage);
+}
+/**
+ * @brief Check if battery voltage is lower than target voltage for warning
+ * 
+ * @return true 
+ * @return false 
+ */
+auto  CORE_M7::warnLowBatVoltage() -> bool
+{
+  if (mpptCharger.controllerInformation.fBatVolt <= settings.fTargetWarningVoltage)
+    return true;
+  else
+    return false;
 }

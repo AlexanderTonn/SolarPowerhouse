@@ -3,8 +3,8 @@
 
 #include <ArduinoRS485.h>  // https://www.arduino.cc/reference/en/libraries/arduinors485/
 #include <ArduinoModbus.h> // https://www.arduino.cc/reference/en/libraries/arduinomodbus/
-#include <array>
-#include "Util.h"
+#include "CORE_M7.h" 
+#include "Array.h"
 class ModbusRTU_Toyo
 {
 private:
@@ -36,7 +36,7 @@ private:
     template <typename T>
     auto printDebug(debugSettings dSetting, T debugVariable, String sFunction) -> void;
 
-    auto selectByte(bytePos pos, uint16_t uiInput) -> uint8_t;
+    
 
 public:
 
@@ -50,24 +50,24 @@ public:
         RAW,
         EDITED
     };
-    enum class chargeAndLoadStates
+    enum class language
     {
-        LOAD_OUTPUT_ACTIVE,
-        IDLE,
-        BOOST,
-        EQUALIZE,
-        FLOAT,
-        OTHER
+        EN,
+        DE
     };
+
 
 private:
     static constexpr std::size_t sizeControllerInfos = 35;
-    std::array<uint16_t, sizeControllerInfos> uiReadBuffer = {0};
+    Array<uint16_t, sizeControllerInfos> uiReadBuffer = {0};
 
     auto writeToStruct(description desc) -> void;
 
     template <std::size_t size>
-    auto parseControllerInfos(std::array<uint16_t, size> uiBuf) -> void;
+    auto parseControllerInfos(Array<uint16_t, size> uiBuf) -> void;
+
+    auto translateChargingState(uint8_t uiChargingState, uint8_t uiLang) -> String;
+    uint8_t uiLanguage = 0; // 0 = EN, 1 = DE
 
 public:
     enum class debugMode
@@ -88,7 +88,6 @@ public:
         float fSolarVolt;
         float fSolarCurr;
         uint16_t uiSolarPwr;
-        chargeAndLoadStates loadState;
         float fBatMinVoltToday;
         float fBatMaxVoltToday;
         float fMaxChargCurrToday;
@@ -107,6 +106,9 @@ public:
         uint32_t uiCumulativeKwhGeneration;
         uint32_t uiCumulativeKwhDrawn;
         bool xLoadOutputActive; 
+        uint8_t uiLoadBrightness; // TODO 0-100% but what does this value mean?
+        uint8_t uiChargingState; 
+        String sChargingState; 
     };
     toyoInfo controllerInformation;
 
@@ -116,13 +118,13 @@ public:
         LOAD_OUTPUT
     };
 
-    auto init(const uint16_t baudrate) -> bool; // init ModbusRTU
+    auto init(const uint16_t baudrate, ModbusRTU_Toyo::language lang = ModbusRTU_Toyo::language::EN) -> bool; // init ModbusRTU
     auto update(uint16_t uiReadInterval) -> void;
 
     template <std::size_t size>
     auto readContrInfo(uint16_t uiDevice,
                        uint16_t uiStartAddress,
-                       std::array<uint16_t, size> &uiData,
+                       Array<uint16_t, size> &uiData,
                        debugMode dLevel = debugMode::NONE) -> bool;
 
     auto writeContrInfo(uint16_t uiDevice,
