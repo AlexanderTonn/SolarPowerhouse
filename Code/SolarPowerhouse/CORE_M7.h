@@ -47,14 +47,15 @@ class CORE_M7
     auto SettingsPvSwitching(bool xOnInverter, bool xOnMppt) -> operationMode;     // checking available options for switching PV1
     auto calculateSoC() -> float;    // calculating SoC
     auto warnLowBatVoltage() -> bool;   // warning if battery voltage is low
+    
 
     public:
     ModbusRTU_Toyo mpptCharger;  
     rtc ntp;
     atUtilities util;
 
-    uint32_t milRtuOld = 0, milTimeUpdateOld = 0; // for timing
-    constexpr static uint16_t uiNtpTimeInterval = 1000 * 60 * 1; // 1 minute
+    byte byMacAddress[6] = {0x00 , 0x00, 0x00, 0x00, 0x00, 0x00}; // MAC Address for Ethernet, only bad C-syntax possible
+    Array <uint32_t,3> aMillisOld; // Saving the old Millis values for functionTrigger
     
     // struct for settings
     struct settings
@@ -68,7 +69,8 @@ class CORE_M7
         float fTargetVoltageMppt = 26.00;      // Target Voltage for switching back to Mppt
         float fSwitchCurrentTarget = 1.00;       // Threshold Current when is switching allowed
         float fTargetWarningVoltage = 25.80;    // Target Voltage for warning if battery voltage is low
-    };
+        float fTariff = 0.38; // Energy price tariff 
+    }; 
     settings settings;
 
     enum class debugMode
@@ -85,6 +87,7 @@ class CORE_M7
     auto init() -> void;
     auto writeOutputs() -> void;    
     auto writeCloudVariables() -> void;   // writing variables to cloud variables
+    auto calculateEnergySavings(float fTariff, uint32_t uiWh) -> float;
 
 };
 

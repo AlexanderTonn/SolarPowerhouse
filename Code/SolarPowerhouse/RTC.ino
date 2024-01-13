@@ -13,11 +13,11 @@ auto rtc::init() -> void
   {
     for (auto i = 0; i < 6; i++)
     {
-      byMacAddress[i] = info->mac_address[i];
+      mainCore.byMacAddress[i] = info->mac_address[i];
     }
   }
 
-  if (Ethernet.begin(byMacAddress) == 0)
+  if (Ethernet.begin(mainCore.byMacAddress) == 0)
   {
     Serial.println("Failed to configure Ethernet using DHCP");
     // Check for Ethernet hardware present

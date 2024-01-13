@@ -32,3 +32,11 @@ void onFSettTargetVoltageMpptChange()  {
 void onFSettSwitchCurrentTargetChange()  {
   mainCore.settings.fSwitchCurrentTarget = fSettSwitchCurrentTarget;
 }
+
+void onFTariffChange()  {
+  mainCore.settings.fTariff = fTariff;
+}
+
+void onSOptaLogChange()  {
+  // Add your code here to act upon SOptaLog change
+}

@@ -65,7 +65,7 @@ auto ModbusRTU_Toyo::init(const uint16_t baud, ModbusRTU_Toyo::language lang) ->
  * @param dLevel Serial Print of raw data
  * @return true or false
  */
-template <std::size_t size>
+template <size_t size>
 auto ModbusRTU_Toyo::readContrInfo(uint16_t uiDevice,
                                    uint16_t uiStartAddress,
                                    Array<uint16_t, size> &uiData,
@@ -122,7 +122,7 @@ auto ModbusRTU_Toyo::writeToStruct(description desc) -> void
  * @param uiBuf
  * @return none
  */
-template <std::size_t size>
+template <size_t size>
 auto ModbusRTU_Toyo::parseControllerInfos(Array<uint16_t, size> uiBuf) -> void
 {
     controllerInformation.uiBatSoC = uiBuf.at(0);
@@ -158,6 +158,22 @@ auto ModbusRTU_Toyo::parseControllerInfos(Array<uint16_t, size> uiBuf) -> void
     controllerInformation.uiLoadBrightness = mainCore.util.selectMultipleBits16(static_cast<uint16_t>(mainCore.util.byteSelect16(atUtilities::bytePos::HIGH_BYTE, uiBuf.at(32))), 0, 6);
     controllerInformation.uiChargingState = mainCore.util.byteSelect16(atUtilities::bytePos::LOW_BYTE, uiBuf.at(32));
     controllerInformation.sChargingState = translateChargingState(controllerInformation.uiChargingState, uiLanguage);
+    controllerInformation.aMalfunctions.at(0) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 14, false); // circuit, charge MOS short circuit
+    controllerInformation.aMalfunctions.at(1) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 13, false); // anti Reverse MOS short circuit
+    controllerInformation.aMalfunctions.at(2) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 12, false); // solar panel reverse connection
+    controllerInformation.aMalfunctions.at(3) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 11, false); // solar panel working point over voltage
+    controllerInformation.aMalfunctions.at(4) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 10, false); // solar panel counter Current
+    controllerInformation.aMalfunctions.at(5) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 9, false);  // solar panel input Voltage to high
+    controllerInformation.aMalfunctions.at(6) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 8, false);  // solar panel short circuit
+    controllerInformation.aMalfunctions.at(7) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 7, false);  // solar panel overpower
+    controllerInformation.aMalfunctions.at(8) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 6, false);  // ambient temperature too high
+    controllerInformation.aMalfunctions.at(9) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 5, false);  // mppt charger temp too high
+    controllerInformation.aMalfunctions.at(10) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 4, false); // load overpower or load overcurrent
+    controllerInformation.aMalfunctions.at(11) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 3, false); // load short circuit
+    controllerInformation.aMalfunctions.at(12) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 2, false); // battery overvoltage
+    controllerInformation.aMalfunctions.at(13) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 1, false); // battery undervoltage
+    controllerInformation.aMalfunctions.at(14) = mainCore.util.bitManipulation(atUtilities::permission::READ, uiBuf.at(34), 0, false); // battery over discharge
+
     // TODO!
 }
 /**
@@ -263,12 +279,12 @@ auto ModbusRTU_Toyo::printDebug(debugSettings dSetting, T debugVariable, String 
  * @param uiLang language no of ModbusRTU_Toyo::language
  * @return String
  */
-auto ModbusRTU_Toyo::translateChargingState(uint8_t uiChargingState, uint8_t uiLang ) -> String
+auto ModbusRTU_Toyo::translateChargingState(uint8_t uiChargingState, uint8_t uiLang) -> String
 {
-    String sResult;
+    String sResult = "";
     switch (uiLang)
     {
-    case static_cast<uint8_t>(ModbusRTU_Toyo::language::EN) : 
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::EN):
         switch (uiChargingState)
         {
         case 0:
@@ -295,7 +311,7 @@ auto ModbusRTU_Toyo::translateChargingState(uint8_t uiChargingState, uint8_t uiL
         }
         break;
 
-    case static_cast<uint8_t>(ModbusRTU_Toyo::language::DE) :
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::DE):
         switch (uiChargingState)
         {
         case 0:
@@ -322,5 +338,100 @@ auto ModbusRTU_Toyo::translateChargingState(uint8_t uiChargingState, uint8_t uiL
         }
         break;
     }
+    return sResult;
+}
+
+template <size_t size>
+auto ModbusRTU_Toyo::translateMalfunctions(Array<bool, size> &aMalfunctions, uint8_t uiLang) -> String
+{
+    uint8_t uiFaultCounter = 0; // Counting the amount of faults
+    String sResult = "";
+
+    // Get the amount of faults
+    for (auto i = 0; i < aMalfunctions.size(); i++)
+    {
+        if (aMalfunctions.at(i))
+            uiFaultCounter++;
+    }
+
+    switch (uiLang)
+    {
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::EN):
+        static Array<String, 15> sStringsEN = {{"charge MOSFET short circuit",
+                                                "anti Reverse MOSFET short circuit",
+                                                "solar panel reverse connection",
+                                                "solar panel working point over voltage",
+                                                "solar panel counter Current",
+                                                "solar panel input Voltage to high",
+                                                "solar panel short circuit",
+                                                "solar panel overpower",
+                                                "ambient temperature too high",
+                                                "mppt charger temp too high",
+                                                "load overpower or load overcurrent",
+                                                "load short circuit",
+                                                "battery overvoltage",
+                                                "battery undervoltage",
+                                                "battery over discharge"}};
+
+        // generate return String
+        if (uiFaultCounter == 0)
+            sResult = "No faults";
+        else if (uiFaultCounter == 1)
+        {
+            sResult = "A fault occured: ";
+            sResult += sStringsEN.at(mainCore.util.indexOf(aMalfunctions, true));
+        }
+
+        else if (uiFaultCounter > 1)
+        {
+            sResult = "Multiple faults occured: ";
+
+            for (auto i = 0; i < aMalfunctions.size(); i++)
+            {
+                if (aMalfunctions.at(i))
+                    sResult += sStringsEN.at(i) + ", ";
+            }
+        }
+
+        break;
+
+    case static_cast<uint8_t>(ModbusRTU_Toyo::language::DE):
+        static Array<String, 15> sStringsDE = {{"Lade MOSFET Kurzschluss",
+                                                "Rückfluss-Schutz MOSFET kurzschluss",
+                                                "Solareingang verpolt",
+                                                "Solareingang Arbeitspunkt Überspannung",
+                                                "Solareingang Gegenstrom",
+                                                "Solar Eingangsspannung zu hoch",
+                                                "Solareingang Kurzschluss",
+                                                "Solareingang Überlast",
+                                                "Umgebungstemperatur zu hoch",
+                                                "MPPT Laderegler Temperatur zu hoch",
+                                                "Lastausgang Überlast oder Überstrom",
+                                                "Lastausgang Kurzschluss",
+                                                "Batterie Überspannung",
+                                                "Batterie Unterspannung",
+                                                "Batterie Tiefentladung"}};
+
+        // generate return String
+        if (uiFaultCounter == 0)
+            sResult = "Keine Fehler";
+        else if (uiFaultCounter == 1)
+        {
+            sResult = "Ein Fehler ist aufgetreten: ";
+            sResult += sStringsDE.at(mainCore.util.indexOf(aMalfunctions, true));
+        }
+
+        else if (uiFaultCounter > 1)
+        {
+            sResult = "Mehrere Fehler sind aufgetreten: ";
+            for (auto i = 0; i < aMalfunctions.size(); i++)
+            {
+                if (aMalfunctions.at(i))
+                    sResult += sStringsDE.at(i) + ", ";
+            }
+        }
+        break;
+    }
+
     return sResult;
 }

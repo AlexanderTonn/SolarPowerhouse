@@ -58,16 +58,19 @@ public:
 
 
 private:
-    static constexpr std::size_t sizeControllerInfos = 35;
+    static constexpr size_t sizeControllerInfos = 35;
     Array<uint16_t, sizeControllerInfos> uiReadBuffer = {0};
 
     auto writeToStruct(description desc) -> void;
 
-    template <std::size_t size>
+    template <size_t size>
     auto parseControllerInfos(Array<uint16_t, size> uiBuf) -> void;
 
     auto translateChargingState(uint8_t uiChargingState, uint8_t uiLang) -> String;
     uint8_t uiLanguage = 0; // 0 = EN, 1 = DE
+
+    template <size_t size>
+    auto translateMalfunctions(Array<bool, size> &aMalfunctions, uint8_t uiLang) -> String;
 
 public:
     enum class debugMode
@@ -109,6 +112,8 @@ public:
         uint8_t uiLoadBrightness; // TODO 0-100% but what does this value mean?
         uint8_t uiChargingState; 
         String sChargingState; 
+        Array <bool,15> aMalfunctions; // Status bits of Maulfunctions
+        String sMalfunctions; // Status bits in readable String converted
     };
     toyoInfo controllerInformation;
 

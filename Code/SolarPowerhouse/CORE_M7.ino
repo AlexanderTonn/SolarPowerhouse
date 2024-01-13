@@ -239,7 +239,14 @@ auto CORE_M7::writeCloudVariables() -> void
   sChargingState = mpptCharger.controllerInformation.sChargingState;
   xSettIgnoreCurrent = settings.xignoreCurrent; 
   xVoltageLow = warnLowBatVoltage();
-
+  fTariff = mainCore.settings.fTariff; 
+  sMacAddress =   String(mainCore.byMacAddress[0], HEX) + ":"
+                + String(mainCore.byMacAddress[1], HEX) + ":"
+                + String(mainCore.byMacAddress[2], HEX) + ":"
+                + String(mainCore.byMacAddress[3], HEX) + ":"
+                + String(mainCore.byMacAddress[4], HEX) + ":"
+                + String(mainCore.byMacAddress[5], HEX);
+  fCalculatedEnergySavings = mainCore.calculateEnergySavings(mainCore.settings.fTariff, mainCore.mpptCharger.controllerInformation.uiCumulativeKwhGeneration);
 }
 /**
  * @brief Calculate State of Charge depending of the voltage
@@ -262,4 +269,16 @@ auto  CORE_M7::warnLowBatVoltage() -> bool
     return true;
   else
     return false;
+}
+
+/**
+ * @brief Calculating the energy Saving in euro
+ * 
+ * @param fTariff price tariff in euro
+ * @param uiWh generated Enegry in Wh
+ * @return float 
+ */
+auto CORE_M7::calculateEnergySavings(float fTariff, uint32_t uiWh) -> float
+{
+  return (uiWh*0.001)/fTariff;
 }

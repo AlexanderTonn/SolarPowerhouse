@@ -6,6 +6,7 @@
 #include <Ethernet.h>
 #include <EthernetUdp.h>
 #include "opta_info.h"
+#include "CORE_M7.h"
 
 // https://www.tutorialspoint.com/c_standard_library/time_h.htm
 
@@ -21,7 +22,7 @@ class rtc
     private:
     EthernetUDP ntpUdp;
 
-    byte byMacAddress[6] = {0x00 , 0x00, 0x00, 0x00, 0x00, 0x00}; // MAC Address for Ethernet, only bad C-syntax possible
+    
     constexpr static uint16_t PORT = 8888;
 
     public:
