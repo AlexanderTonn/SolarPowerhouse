@@ -89,6 +89,8 @@ class CORE_M7
     auto writeCloudVariables() -> void;   // writing variables to cloud variables
     auto calculateEnergySavings(float fTariff, uint32_t uiWh) -> float;
 
+    auto debugMessenger(String sMessage) -> String;    // debug messenger for cloud variables
+
 };
 
 CORE_M7 mainCore; // create object of control class

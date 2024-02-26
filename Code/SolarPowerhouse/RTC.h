@@ -22,7 +22,6 @@ class rtc
     private:
     EthernetUDP ntpUdp;
 
-    
     constexpr static uint16_t PORT = 8888;
 
     public:
