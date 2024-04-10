@@ -5,28 +5,29 @@
   (paper "A4")
 
   (title_block
-    (date "2023-06-27")
-    (rev "1.1")
+    (title "Deckblatt")
+    (date "2024-02-03")
+    (rev "1.2")
   )
 
   (lib_symbols
   )
 
 
-  (text "Dokumentation" (at 25.4 82.55 0)
-    (effects (font (size 2 2) (thickness 0.4) bold) (justify left bottom))
+  (text "Dokumentation" (at 25.4 67.31 0)
+    (effects (font (size 4 4) (thickness 0.4) bold) (justify left bottom))
     (uuid 0e78702b-85b6-4e94-aff2-723b4ca74f4d)
   )
 
-  (sheet (at 25.4 55.88) (size 38.1 12.7) (fields_autoplaced)
+  (sheet (at 80.01 30.48) (size 39.37 12.7) (fields_autoplaced)
     (stroke (width 0.1524) (type solid))
     (fill (color 0 0 0 0.0000))
-    (uuid 00de15c1-7851-4a2c-8d56-e8e879166b38)
-    (property "Sheetname" "Versorgung Steuerplatine" (at 25.4 55.1684 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid 3fbb0047-0000-4626-8c6a-fbb5ffed35fb)
+    (property "Sheetname" "Arduino" (at 80.01 28.9034 0)
+      (effects (font (size 3 3) bold) (justify left bottom))
     )
-    (property "Sheetfile" "powerSupply.kicad_sch" (at 25.4 69.1646 0)
-      (effects (font (size 1.27 1.27)) (justify left top) hide)
+    (property "Sheetfile" "arduino.kicad_sch" (at 80.01 43.7646 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
     )
     (instances
       (project "SolarPowerhouse"
@@ -35,31 +36,14 @@
     )
   )
 
-  (sheet (at 68.58 55.88) (size 39.37 12.7) (fields_autoplaced)
-    (stroke (width 0.1524) (type solid))
-    (fill (color 0 0 0 0.0000))
-    (uuid 3fbb0047-0000-4626-8c6a-fbb5ffed35fb)
-    (property "Sheetname" "Arduino" (at 68.58 55.1684 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
-    )
-    (property "Sheetfile" "arduino.kicad_sch" (at 68.58 69.1646 0)
-      (effects (font (size 1.27 1.27)) (justify left top))
-    )
-    (instances
-      (project "SolarPowerhouse"
-        (path "/3df9bc04-15ae-4584-9deb-0b3953389171" (page "6"))
-      )
-    )
-  )
-
-  (sheet (at 25.4 106.68) (size 38.1 11.43) (fields_autoplaced)
+  (sheet (at 80.01 76.2) (size 45.72 11.43) (fields_autoplaced)
     (stroke (width 0.1524) (type solid))
     (fill (color 0 0 0 0.0000))
     (uuid 80e1fc54-dd9e-4712-824c-ee50e24d7577)
-    (property "Sheetname" "Leitungsberechnung" (at 25.4 105.9684 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
+    (property "Sheetname" "Leitungsberechnung" (at 80.01 74.6234 0)
+      (effects (font (size 3 3) bold) (justify left bottom))
     )
-    (property "Sheetfile" "doc3.kicad_sch" (at 25.4 118.6946 0)
+    (property "Sheetfile" "docLeitung.kicad_sch" (at 80.01 88.2146 0)
       (effects (font (size 1.27 1.27)) (justify left top))
     )
     (instances
@@ -69,31 +53,14 @@
     )
   )
 
-  (sheet (at 25.4 86.36) (size 38.1 12.7) (fields_autoplaced)
+  (sheet (at 25.4 76.2) (size 38.1 12.7) (fields_autoplaced)
     (stroke (width 0.1524) (type solid))
     (fill (color 0 0 0 0.0000))
     (uuid 9aa18fc7-a728-4e5b-a34c-9c2109c71666)
-    (property "Sheetname" "Solarmodule" (at 25.4 85.6484 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
+    (property "Sheetname" "Solarmodule" (at 25.4 74.6234 0)
+      (effects (font (size 3 3) bold) (justify left bottom))
     )
-    (property "Sheetfile" "doc1.kicad_sch" (at 25.4 99.6446 0)
-      (effects (font (size 1.27 1.27)) (justify left top))
-    )
-    (instances
-      (project "SolarPowerhouse"
-        (path "/3df9bc04-15ae-4584-9deb-0b3953389171" (page "4"))
-      )
-    )
-  )
-
-  (sheet (at 68.58 86.36) (size 41.91 12.7) (fields_autoplaced)
-    (stroke (width 0.1524) (type solid))
-    (fill (color 0 0 0 0.0000))
-    (uuid cd59704a-4002-46f3-925b-2b2e4f2d351e)
-    (property "Sheetname" "Batterien" (at 68.58 85.6484 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
-    )
-    (property "Sheetfile" "doc2.kicad_sch" (at 68.58 99.6446 0)
+    (property "Sheetfile" "docSolar.kicad_sch" (at 25.4 89.4846 0)
       (effects (font (size 1.27 1.27)) (justify left top))
     )
     (instances
@@ -103,12 +70,29 @@
     )
   )
 
-  (sheet (at 25.4 30.48) (size 38.1 12.7) (fields_autoplaced)
+  (sheet (at 127 30.48) (size 41.91 12.7) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid cd59704a-4002-46f3-925b-2b2e4f2d351e)
+    (property "Sheetname" "Offgrid Batterien" (at 127 28.9034 0)
+      (effects (font (size 3 3) bold) (justify left bottom))
+    )
+    (property "Sheetfile" "battery.kicad_sch" (at 127 43.7646 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "SolarPowerhouse"
+        (path "/3df9bc04-15ae-4584-9deb-0b3953389171" (page "4"))
+      )
+    )
+  )
+
+  (sheet (at 25.4 30.48) (size 44.45 12.7) (fields_autoplaced)
     (stroke (width 0.1524) (type solid))
     (fill (color 0 0 0 0.0000))
     (uuid f739ce40-0704-44b7-80b0-e30e642b6d39)
-    (property "Sheetname" "Hauptstromlaufplan" (at 25.4 29.7684 0)
-      (effects (font (size 1.27 1.27)) (justify left bottom))
+    (property "Sheetname" "Hauptstromlaufplan" (at 25.4 28.9034 0)
+      (effects (font (size 3 3) bold) (justify left bottom))
     )
     (property "Sheetfile" "Gesamtanlage.kicad_sch" (at 25.4 43.7646 0)
       (effects (font (size 1.27 1.27)) (justify left top))
@@ -121,6 +105,6 @@
   )
 
   (sheet_instances
-    (path "/" (page "1"))
+    (path "/" (page "5"))
   )
 )

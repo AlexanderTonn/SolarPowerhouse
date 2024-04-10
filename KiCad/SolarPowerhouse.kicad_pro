@@ -244,7 +244,9 @@
   },
   "libraries": {
     "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_symbol_libs": [
+      "Alexander Tonn"
+    ]
   },
   "meta": {
     "filename": "SolarPowerhouse.kicad_pro",
@@ -334,28 +336,24 @@
   },
   "sheets": [
     [
-      "3df9bc04-15ae-4584-9deb-0b3953389171",
-      ""
-    ],
-    [
       "f739ce40-0704-44b7-80b0-e30e642b6d39",
       "Hauptstromlaufplan"
     ],
     [
-      "00de15c1-7851-4a2c-8d56-e8e879166b38",
-      "Versorgung Steuerplatine"
+      "3fbb0047-0000-4626-8c6a-fbb5ffed35fb",
+      "Arduino"
+    ],
+    [
+      "cd59704a-4002-46f3-925b-2b2e4f2d351e",
+      "Offgrid Batterien"
+    ],
+    [
+      "3df9bc04-15ae-4584-9deb-0b3953389171",
+      ""
     ],
     [
       "9aa18fc7-a728-4e5b-a34c-9c2109c71666",
       "Solarmodule"
-    ],
-    [
-      "cd59704a-4002-46f3-925b-2b2e4f2d351e",
-      "Batterien"
-    ],
-    [
-      "3fbb0047-0000-4626-8c6a-fbb5ffed35fb",
-      "Arduino"
     ],
     [
       "80e1fc54-dd9e-4712-824c-ee50e24d7577",
