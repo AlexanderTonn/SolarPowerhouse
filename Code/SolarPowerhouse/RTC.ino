@@ -37,7 +37,7 @@ auto rtc::init() -> void
 
   timeClient.begin();
   Serial.println("Time Client started");
-  updateTime(debugInformations::ACTIVE);
+  updateTime();
 #elif
   Serial.println("No Opta Board Info, could not Init RTC");
 #endif
@@ -61,7 +61,7 @@ auto rtc::rtcCheckDayChange(bool xSettDayChangeActive) -> bool
   // if xSettDayChangeActive is true, check whether day has changed
   else
   {
-    uint16_t uiDayActual = getTimeData(timeOption::DAY_OF_YEAR);
+    auto uiDayActual = getTimeData(timeOption::DAY_OF_YEAR, debugInformations::ACTIVE);
     if (uiDayActual != uiDateOld)
     {
       uiDateOld = uiDayActual;
@@ -84,8 +84,8 @@ auto rtc::updateTime(debugInformations info) -> void
 
   if (info == debugInformations::ACTIVE)
   {
-    Serial.println("UTC Time: " + String(getLocalTime()));
-    Serial.println("Unix Time: " + String(epoch));
+    sOptaLog = mainCore.debugMessenger("UTC Time: " + String(getLocalTime()));
+    sOptaLog = mainCore.debugMessenger("Unix Time: " + String(epoch));
   }
 }
 
@@ -157,12 +157,12 @@ auto rtc::getTimeData(timeOption to, debugInformations debug) -> uint16_t
     break;
 
   default:
-    Serial.println("No valid option passed");
+    sOptaLog = mainCore.debugMessenger("No valid option passed");
     break;
   }
 
   if (debug == debugInformations::ACTIVE)
   {
-    Serial.println("Time: " + String(uiValue));
+     sOptaLog = mainCore.debugMessenger(String(__func__)  + "Value of selected time Option: " + String(uiValue));
   }
 }

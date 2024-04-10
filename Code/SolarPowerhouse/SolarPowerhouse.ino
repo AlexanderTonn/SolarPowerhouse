@@ -27,9 +27,9 @@ void loop()
     mainCore.mpptCharger.update(5000);
     mainCore.writeCloudVariables();
   }
-  // uüdate each minute
+  // update each minute
   if (mainCore.util.functionTrigger(mainCore.aMillisOld.at(1), 60*1000))
-    mainCore.ntp.updateTime(rtc::debugInformations::ACTIVE);
+    mainCore.ntp.updateTime();
     
 
   ArduinoCloud.update();

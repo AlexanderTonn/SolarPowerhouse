@@ -114,15 +114,14 @@ auto CORE_M7::controlLogic() -> void
                                          atUtilities::edgeType::FALLING_EDGE,
                                          settings.fTargetVoltageMppt); // Battery should charged if dropped down to 50%
 
-  auto xCheckDayChange = util.functionTrigger(uiMillisCheckDayChange, 3600000); // 1 hour
-
+  auto xCheckDayChange = util.functionTrigger(uiMillisCheckDayChange, 60 * 1000 * 10); // check every 10 minutes
+  sOptaLog = debugMessenger("uiMillisCheckDayChange: " + String(uiMillisCheckDayChange)); // TODO!: Something is wrong with the function trigger
   // CONTROL LOGIC
   // Set Relays on Mppt if day changed
   if (xCheckDayChange || xFirstCycle)
   {
-    Serial.println("xCheckDayChange: " + String(xCheckDayChange));
     auto xDayChanged = ntp.rtcCheckDayChange(settings.xResetDay);
-    if (xDayChanged == true && mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget || xFirstCycle)
+    if (xDayChanged && mpptCharger.controllerInformation.fSolarCurr <= settings.fSwitchCurrentTarget || xFirstCycle)
     {
       byModeActual = BATTERY_MODE;
       xPv1OnMppt = true;
@@ -181,7 +180,7 @@ auto CORE_M7::controlLogic() -> void
     break;
 
   default:
-    Serial.println("Error in controlLogic");
+    sOptaLog = debugMessenger("Error in controlLogic");
     break;
   }
 }
@@ -280,5 +279,12 @@ auto  CORE_M7::warnLowBatVoltage() -> bool
  */
 auto CORE_M7::calculateEnergySavings(float fTariff, uint32_t uiWh) -> float
 {
-  return (uiWh*0.001)/fTariff;
+  return uiWh*0.001*fTariff;
+}
+auto CORE_M7::debugMessenger(String sMessage) -> String 
+{
+  return sMessage;
+
+  // Also print it in the Serial Monitor
+  Serial.println(sMessage);
 }
