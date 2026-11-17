@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "operating_mode": "AUTO",
+  "battery": {
+    "voltage_low": null,
+    "voltage_high": null,
+    "confirmation_time_s": 30,
+    "island_inverter_cutoff_voltage": null,
+    "island_inverter_enable_voltage": null,
+    "island_inverter_confirmation_time_s": 5
+  },
+  "switching": {
+    "inter_step_delay_ms": 1000,
+    "minimum_mode_duration_s": 300
+  },
+  "mqtt": {
+    "enabled": true,
+    "topic_prefix": "solarpowerhouse/v1"
+  },
+  "weather": {
+    "location": ""
+  }
+}

@@ -1,0 +1,33 @@
+[Unit]
+Description=Solar Powerhouse core controller
+After=network-online.target
+Wants=network-online.target
+PartOf=solar-powerhouse.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/solar-core
+Environment=SOLAR_POWERHOUSE_MAPPING_FILE=/var/lib/solarpowerhouse/modbus-mapping.conf
+Environment=SOLAR_POWERHOUSE_STATE_FILE=/var/lib/solarpowerhouse/modbus-state.json
+Restart=on-failure
+RestartSec=2
+User=solarpowerhouse
+Group=solarpowerhouse
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0077
+ReadWritePaths=/var/lib/solarpowerhouse /var/log/solarpowerhouse
+
+[Install]
+WantedBy=solar-powerhouse.target

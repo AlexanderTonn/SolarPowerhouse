@@ -1,0 +1,57 @@
+name: Linux package
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Build Linux deployment package
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            cmake \
+            ninja-build \
+            g++ \
+            qt6-base-dev \
+            qt6-declarative-dev \
+            qt6-declarative-dev-tools
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Install to staging directory
+        run: cmake --install build --prefix "$PWD/stage"
+
+      - name: Add deployment metadata
+        run: |
+          mkdir -p stage/share/solarpowerhouse
+          cp README.md LICENSE stage/share/solarpowerhouse/
+          cp -R docs stage/share/solarpowerhouse/
+
+      - name: Create package
+        run: tar -czf "solarpowerhouse-linux-${GITHUB_SHA}.tar.gz" -C stage .
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: solarpowerhouse-linux-${{ github.sha }}
+          path: solarpowerhouse-linux-${{ github.sha }}.tar.gz
+          if-no-files-found: error

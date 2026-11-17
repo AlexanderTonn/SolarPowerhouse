@@ -1,0 +1,7 @@
+[Unit]
+Description=Solar Powerhouse control service and touch HMI
+Wants=solar-core.service solar-hmi.service
+After=network-online.target graphical.target solar-core.service solar-hmi.service
+
+[Install]
+WantedBy=graphical.target

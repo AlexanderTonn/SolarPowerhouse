@@ -10,3 +10,18 @@ Code/.DS_Store
 .vscode/arduino.json
 .vscode/c_cpp_properties.json
 
+.DS_Store
+build/
+cmake-build-*/
+.pio/
+.qtcreator/
+compile_commands.json
+
+# KiCad generated/user-local files
+*.kicad_prl
+fp-info-cache
+*_autosave-*.kicad_sch
+
+# Runtime data
+*.sqlite
+*.sqlite-*

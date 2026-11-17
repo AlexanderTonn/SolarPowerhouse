@@ -1,0 +1,32 @@
+[Unit]
+Description=Solar Powerhouse touch HMI
+After=solar-core.service graphical.target
+PartOf=solar-powerhouse.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/solar-hmi
+Environment=SOLAR_POWERHOUSE_MAPPING_FILE=/var/lib/solarpowerhouse/modbus-mapping.conf
+Environment=SOLAR_POWERHOUSE_STATE_FILE=/var/lib/solarpowerhouse/modbus-state.json
+Restart=on-failure
+RestartSec=2
+User=solarpowerhouse
+Environment=QT_QPA_PLATFORM=eglfs
+Environment=XDG_CONFIG_HOME=/var/lib/solarpowerhouse/hmi-config
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/solarpowerhouse
+
+[Install]
+WantedBy=solar-powerhouse.target
