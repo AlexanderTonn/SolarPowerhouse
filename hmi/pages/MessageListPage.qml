@@ -51,6 +51,7 @@ Item {
 
     Rectangle { anchors.fill: parent; color: "#101317" }
     AppHeader {
+        id: header
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -65,8 +66,7 @@ Item {
     }
 
     Column {
-        anchors.top: parent.top
-        anchors.topMargin: 98
+        anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom

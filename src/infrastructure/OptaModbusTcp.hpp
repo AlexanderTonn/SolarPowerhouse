@@ -26,6 +26,21 @@ struct ModbusMappingDefinition {
     std::uint16_t commandSequenceRegister;
 };
 
+struct ModbusConnectionSettings {
+    std::string host{"192.168.10.20"};
+    std::string subnet{"255.255.255.0"};
+    std::string gateway{"192.168.10.1"};
+    std::uint16_t port{502};
+    std::uint8_t unitId{1};
+};
+
+[[nodiscard]] ModbusConnectionSettings defaultModbusConnectionSettings() noexcept;
+[[nodiscard]] bool validModbusConnectionSettings(
+    const ModbusConnectionSettings& settings) noexcept;
+[[nodiscard]] bool loadModbusConnectionSettings(
+    const std::string& path,
+    ModbusConnectionSettings& settings);
+
 [[nodiscard]] const ModbusMappingDefinition& toyoRenogyMapping() noexcept;
 [[nodiscard]] const ModbusMappingDefinition& mappingDefinition(ModbusMappingId id) noexcept;
 [[nodiscard]] std::optional<ModbusMappingId> mappingFromKey(std::string_view key) noexcept;
@@ -101,6 +116,9 @@ struct OptaTelemetry {
 class OptaModbusTcpClient final {
 public:
     explicit OptaModbusTcpClient(ModbusMappingId mapping);
+    OptaModbusTcpClient(
+        ModbusMappingId mapping,
+        ModbusConnectionSettings connection);
     ~OptaModbusTcpClient();
 
     OptaModbusTcpClient(const OptaModbusTcpClient&) = delete;
@@ -111,6 +129,7 @@ public:
     void stop() noexcept;
 
     [[nodiscard]] const ModbusMappingDefinition& mapping() const noexcept { return mapping_; }
+    [[nodiscard]] const ModbusConnectionSettings& connection() const noexcept { return connection_; }
     [[nodiscard]] std::string_view lastError() const noexcept { return lastError_; }
 
 private:
@@ -128,6 +147,7 @@ private:
     void setError(std::string error);
 
     const ModbusMappingDefinition& mapping_;
+    ModbusConnectionSettings connection_{};
     int socket_{-1};
     std::uint16_t transactionId_{0};
     std::uint16_t heartbeat_{0};

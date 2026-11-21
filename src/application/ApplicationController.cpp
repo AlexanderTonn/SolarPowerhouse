@@ -1,7 +1,6 @@
 #include "application/ApplicationController.hpp"
 
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -13,9 +12,15 @@ namespace solar {
 namespace {
 
 constexpr auto defaultMappingFileLinux = "/var/lib/solarpowerhouse/modbus-mapping.conf";
-constexpr auto defaultStateFileLinux = "/var/lib/solarpowerhouse/modbus-state.json";
+constexpr auto defaultModbusConnectionFileLinux = "/var/lib/solarpowerhouse/modbus-connection.conf";
+constexpr auto defaultTelemetryIpcSocketLinux = "/run/solarpowerhouse/telemetry.sock";
+constexpr auto defaultHistoryDatabaseLinux = "/var/lib/solarpowerhouse/telemetry.sqlite";
+constexpr auto defaultHistorySettingsLinux = "/var/lib/solarpowerhouse/telemetry-history.conf";
 constexpr auto defaultMappingFileDevelopment = "/tmp/solarpowerhouse-modbus-mapping.conf";
-constexpr auto defaultStateFileDevelopment = "/tmp/solarpowerhouse-modbus-state.json";
+constexpr auto defaultModbusConnectionFileDevelopment = "/tmp/solarpowerhouse-modbus-connection.conf";
+constexpr auto defaultTelemetryIpcSocketDevelopment = "/tmp/solarpowerhouse-telemetry.sock";
+constexpr auto defaultHistoryDatabaseDevelopment = "/tmp/solarpowerhouse-telemetry.sqlite";
+constexpr auto defaultHistorySettingsDevelopment = "/tmp/solarpowerhouse-telemetry-history.conf";
 constexpr auto pollInterval = std::chrono::seconds{1};
 
 std::string configuredPath(const char* variable, const char* linuxDefault, const char* developmentDefault) {
@@ -37,11 +42,40 @@ std::string mappingFilePath() {
         defaultMappingFileDevelopment);
 }
 
-std::string stateFilePath() {
+std::string modbusConnectionFilePath() {
     return configuredPath(
-        "SOLAR_POWERHOUSE_STATE_FILE",
-        defaultStateFileLinux,
-        defaultStateFileDevelopment);
+        "SOLAR_POWERHOUSE_MODBUS_CONFIG_FILE",
+        defaultModbusConnectionFileLinux,
+        defaultModbusConnectionFileDevelopment);
+}
+
+std::string telemetryIpcSocketPath() {
+    return configuredPath(
+        "SOLAR_POWERHOUSE_IPC_SOCKET",
+        defaultTelemetryIpcSocketLinux,
+        defaultTelemetryIpcSocketDevelopment);
+}
+
+std::string historyDatabasePath() {
+    return configuredPath(
+        "SOLAR_POWERHOUSE_HISTORY_DB",
+        defaultHistoryDatabaseLinux,
+        defaultHistoryDatabaseDevelopment);
+}
+
+std::string historySettingsPath() {
+    return configuredPath(
+        "SOLAR_POWERHOUSE_HISTORY_SETTINGS_FILE",
+        defaultHistorySettingsLinux,
+        defaultHistorySettingsDevelopment);
+}
+
+infrastructure::ModbusConnectionSettings configuredModbusConnection() {
+    auto settings = infrastructure::defaultModbusConnectionSettings();
+    if (!infrastructure::loadModbusConnectionSettings(modbusConnectionFilePath(), settings)) {
+        settings = infrastructure::defaultModbusConnectionSettings();
+    }
+    return settings;
 }
 
 infrastructure::ModbusMappingId configuredMapping() {
@@ -91,15 +125,46 @@ std::string timestampUtc() {
     return output.str();
 }
 
+std::int64_t timestampEpochMilliseconds() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::system_clock::now().time_since_epoch())
+        .count();
+}
+
 } // namespace
 
 ApplicationController::ApplicationController()
     : mapping_(configuredMapping()),
-      modbusClient_(mapping_) {}
+      modbusClient_(mapping_, configuredModbusConnection()),
+      historyStore_(historyDatabasePath(), historySettingsPath()),
+      telemetryIpc_(telemetryIpcSocketPath()) {}
+
+ApplicationController::~ApplicationController() {
+    telemetryIpc_.stop();
+    historyStore_.close();
+}
 
 bool ApplicationController::start() {
+    const auto now = std::chrono::steady_clock::now();
+    if (!telemetryIpc_.start()) {
+        eventManager_.record(
+            EventType::FaultRaised,
+            EventSeverity::Warning,
+            "HMI IPC",
+            "Telemetry IPC unavailable: " + telemetryIpc_.error());
+    }
+    if (!historyStore_.open()) {
+        eventManager_.record(
+            EventType::FaultRaised,
+            EventSeverity::Warning,
+            "TelemetryHistory",
+            "Telemetry history unavailable: " + historyStore_.error());
+    }
+    lastHistorySampleAt_ = now
+        - std::chrono::seconds{historyStore_.settings().sampleIntervalSeconds};
+    lastHistoryFlushAt_ = now;
     running_ = true;
-    lastPoll_ = std::chrono::steady_clock::now() - pollInterval;
+    lastPoll_ = now - pollInterval;
     eventManager_.record(
         EventType::SystemStarted,
         EventSeverity::Info,
@@ -115,6 +180,12 @@ void ApplicationController::tick() {
     }
 
     const auto now = std::chrono::steady_clock::now();
+    telemetryIpc_.service();
+    if (historyStore_.reloadSettings()) {
+        lastHistorySampleAt_ = now
+            - std::chrono::seconds{historyStore_.settings().sampleIntervalSeconds};
+        lastHistoryFlushAt_ = now;
+    }
     if (now - lastPoll_ < pollInterval) {
         return;
     }
@@ -124,6 +195,18 @@ void ApplicationController::tick() {
     const auto connected = modbusClient_.poll(updated);
     telemetry_ = std::move(updated);
     eventManager_.recordBackendConnection(connected, "Opta ModbusTCP");
+
+    if (connected
+        && now - lastHistorySampleAt_
+            >= std::chrono::seconds{historyStore_.settings().sampleIntervalSeconds}) {
+        historyStore_.append(telemetry_, timestampEpochMilliseconds());
+        lastHistorySampleAt_ = now;
+    }
+    if (now - lastHistoryFlushAt_
+        >= std::chrono::seconds{historyStore_.settings().batchIntervalSeconds}) {
+        historyStore_.flush();
+        lastHistoryFlushAt_ = now;
+    }
     publishTelemetryState();
 }
 
@@ -142,6 +225,7 @@ void ApplicationController::stop() noexcept {
             "Safe output shutdown command failed; gateway watchdog must keep outputs de-energized");
     }
     modbusClient_.stop();
+    historyStore_.flush();
     telemetry_.connected = false;
     telemetry_.error = "solar-core stopped";
     eventManager_.record(
@@ -151,17 +235,15 @@ void ApplicationController::stop() noexcept {
         "All Opta outputs commanded to zero during shutdown");
     running_ = false;
     publishTelemetryState();
+    telemetryIpc_.service();
+    telemetryIpc_.stop();
 }
 
-void ApplicationController::publishTelemetryState() const {
-    const auto path = std::filesystem::path(stateFilePath());
-    std::error_code error;
-    if (!path.parent_path().empty()) {
-        std::filesystem::create_directories(path.parent_path(), error);
-    }
-
+void ApplicationController::publishTelemetryState() {
     std::ostringstream json;
     const auto& mppt = telemetry_.mppt;
+    const auto& connection = modbusClient_.connection();
+    const auto& historySettings = historyStore_.settings();
     json << "{\n"
          << "  \"schema_version\": 1,\n"
          << "  \"mapping\": \"" << jsonString(infrastructure::mappingKey(mapping_)) << "\",\n"
@@ -169,6 +251,13 @@ void ApplicationController::publishTelemetryState() const {
          << "  \"connected\": " << (telemetry_.connected ? "true" : "false") << ",\n"
          << "  \"updated_at\": \"" << timestampUtc() << "\",\n"
          << "  \"error\": \"" << jsonString(telemetry_.error) << "\",\n"
+         << "  \"modbus\": {\n"
+         << "    \"host\": \"" << jsonString(connection.host) << "\",\n"
+         << "    \"subnet\": \"" << jsonString(connection.subnet) << "\",\n"
+         << "    \"gateway\": \"" << jsonString(connection.gateway) << "\",\n"
+         << "    \"port\": " << connection.port << ",\n"
+         << "    \"unit_id\": " << static_cast<unsigned>(connection.unitId) << "\n"
+         << "  },\n"
          << "  \"values\": {\n"
          << "    \"digital_inputs\": " << telemetry_.digitalInputs << ",\n"
          << "    \"contactor_state\": " << telemetry_.contactorState << ",\n"
@@ -217,6 +306,33 @@ void ApplicationController::publishTelemetryState() const {
     << "    \"charging_state\": " << static_cast<unsigned>(mppt.chargingState) << ",\n"
     << "    \"controller_faults\": " << mppt.controllerFaults << "\n"
     << "  },\n"
+    << "  \"history\": {\n"
+    << "    \"available\": " << (historyStore_.available() ? "true" : "false") << ",\n"
+    << "    \"error\": \"" << jsonString(historyStore_.error()) << "\",\n"
+    << "    \"sample_interval_s\": " << historySettings.sampleIntervalSeconds << ",\n"
+    << "    \"batch_interval_s\": " << historySettings.batchIntervalSeconds << ",\n"
+    << "    \"batch_sample_count\": " << historySettings.samplesPerBatch() << ",\n"
+    << "    \"estimated_buffer_bytes\": " << historySettings.estimatedBufferBytes() << ",\n"
+    << "    \"pending_samples\": " << historyStore_.pendingSamples() << ",\n"
+    << "    \"last_sample_timestamp_ms\": " << historyStore_.lastSampleTimestampMs() << ",\n"
+    << "    \"last_flushed_timestamp_ms\": " << historyStore_.lastFlushedTimestampMs() << ",\n"
+    << "    \"latest_sample\": ";
+    if (historyStore_.latestSample().has_value()) {
+        const auto& sample = *historyStore_.latestSample();
+        json << "{\"time\": " << sample.timestampMs
+             << ", \"battery_voltage_v\": ";
+        appendNumber(json, sample.batteryVoltage);
+        json << ", \"charging_power_w\": ";
+        appendNumber(json, sample.chargingPower);
+        json << ", \"battery_temperature_c\": ";
+        appendNumber(json, sample.batteryTemperature);
+        json << ", \"charging_current_a\": ";
+        appendNumber(json, sample.chargingCurrent);
+        json << "}";
+    } else {
+        json << "null";
+    }
+    json << "\n  },\n"
     << "  \"input_registers\": [";
     for (std::size_t index = 0; index < telemetry_.inputRegisters.size(); ++index) {
         if (index != 0) {
@@ -225,22 +341,8 @@ void ApplicationController::publishTelemetryState() const {
         json << telemetry_.inputRegisters[index];
     }
     json << "]\n}\n";
-
-    const auto temporaryPath = path.string() + ".tmp";
-    {
-        std::ofstream file(temporaryPath, std::ios::trunc);
-        if (!file) {
-            return;
-        }
-        file << json.str();
-        if (!file) {
-            return;
-        }
-    }
-    std::filesystem::rename(temporaryPath, path, error);
-    if (error) {
-        std::filesystem::remove(temporaryPath, error);
-    }
+    telemetryIpc_.publish(json.str());
+    telemetryIpc_.service();
 }
 
 } // namespace solar

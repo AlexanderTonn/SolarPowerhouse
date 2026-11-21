@@ -8,11 +8,17 @@ PartOf=solar-powerhouse.target
 Type=simple
 ExecStart=/usr/local/bin/solar-core
 Environment=SOLAR_POWERHOUSE_MAPPING_FILE=/var/lib/solarpowerhouse/modbus-mapping.conf
-Environment=SOLAR_POWERHOUSE_STATE_FILE=/var/lib/solarpowerhouse/modbus-state.json
+Environment=SOLAR_POWERHOUSE_MODBUS_CONFIG_FILE=/var/lib/solarpowerhouse/modbus-connection.conf
+Environment=SOLAR_POWERHOUSE_IPC_SOCKET=/run/solarpowerhouse/telemetry.sock
+Environment=SOLAR_POWERHOUSE_HISTORY_DB=/var/lib/solarpowerhouse/telemetry.sqlite
+Environment=SOLAR_POWERHOUSE_HISTORY_SETTINGS_FILE=/var/lib/solarpowerhouse/telemetry-history.conf
 Restart=on-failure
 RestartSec=2
 User=solarpowerhouse
 Group=solarpowerhouse
+RuntimeDirectory=solarpowerhouse
+RuntimeDirectoryMode=0770
+RuntimeDirectoryPreserve=yes
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
@@ -27,7 +33,7 @@ CapabilityBoundingSet=
 AmbientCapabilities=
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 UMask=0077
-ReadWritePaths=/var/lib/solarpowerhouse /var/log/solarpowerhouse
+ReadWritePaths=/var/lib/solarpowerhouse /var/log/solarpowerhouse /run/solarpowerhouse
 
 [Install]
 WantedBy=solar-powerhouse.target

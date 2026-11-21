@@ -75,8 +75,11 @@ struct BatteryMeasurements {
 };
 
 struct SolarSettings {
-    std::optional<double> voltageLow{};
-    std::optional<double> voltageHigh{};
+    // Automatic routing semantics:
+    // below chargeBelowVoltage -> charge battery through MPPT;
+    // above batteryFullAboveVoltage -> battery is full, use microinverter.
+    std::optional<double> chargeBelowVoltage{};
+    std::optional<double> batteryFullAboveVoltage{};
     std::optional<double> islandInverterCutoffVoltage{};
     std::optional<double> islandInverterEnableVoltage{};
     std::chrono::milliseconds interStepDelay{1000};
@@ -85,9 +88,9 @@ struct SolarSettings {
     std::chrono::seconds minimumModeDuration{300};
 
     [[nodiscard]] bool thresholdsValid() const noexcept {
-        return voltageLow.has_value() && voltageHigh.has_value()
-            && std::isfinite(*voltageLow) && std::isfinite(*voltageHigh)
-            && *voltageLow < *voltageHigh;
+        return chargeBelowVoltage.has_value() && batteryFullAboveVoltage.has_value()
+            && std::isfinite(*chargeBelowVoltage) && std::isfinite(*batteryFullAboveVoltage)
+            && *chargeBelowVoltage < *batteryFullAboveVoltage;
     }
 
     [[nodiscard]] bool islandInverterProtectionValid() const noexcept {

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(SolarPowerhouse VERSION 0.1.0 LANGUAGES CXX)
 
 include(CTest)
+find_package(SQLite3 REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,14 +18,19 @@ add_library(solar_core
     src/domain/IslandInverterProtectionController.cpp
     src/domain/SwitchingController.cpp
     src/infrastructure/OptaModbusTcp.cpp
+    src/infrastructure/TelemetryHistoryStore.cpp
+    src/infrastructure/TelemetryIpc.cpp
 )
 
 target_include_directories(solar_core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+    PRIVATE
+        ${SQLite3_INCLUDE_DIRS}
 )
 
 target_compile_features(solar_core PUBLIC cxx_std_20)
+target_link_libraries(solar_core PRIVATE ${SQLite3_LIBRARIES})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(solar_core PRIVATE -Wall -Wextra -Wpedantic -Wconversion)
@@ -44,13 +50,14 @@ if (BUILD_TESTING)
         tests/MqttContractTest.cpp
         tests/MockHardwareInterface.cpp
         tests/OptaModbusTcpTest.cpp
+        tests/TelemetryHistoryStoreTest.cpp
     )
     target_link_libraries(solar-core-tests PRIVATE solar_core)
     target_include_directories(solar-core-tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
     add_test(NAME solar-core-tests COMMAND solar-core-tests)
 endif()
 
-find_package(Qt6 QUIET COMPONENTS Core Gui Qml Quick QuickControls2 Network)
+find_package(Qt6 QUIET COMPONENTS Core Gui Qml Quick QuickControls2 Network Sql)
 if (Qt6_FOUND)
     set(CMAKE_AUTOMOC ON)
     if (COMMAND qt_policy)
@@ -107,7 +114,7 @@ if (Qt6_FOUND)
             hmi/assets/flag-de.svg
             hmi/assets/flag-gb.svg
     )
-    target_link_libraries(solar-hmi PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Network)
+    target_link_libraries(solar-hmi PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Network Qt6::Sql)
 else()
     message(STATUS "Qt6 not found: solar-hmi target disabled; solar-core and tests remain buildable")
 endif()

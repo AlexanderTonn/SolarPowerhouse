@@ -4,10 +4,13 @@
 #include <cerrno>
 #include <cstring>
 #include <arpa/inet.h>
+#include <fstream>
+#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sstream>
 #include <sys/socket.h>
+#include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <utility>
@@ -67,6 +70,25 @@ std::string decodeText(const std::array<std::uint16_t, SystemInformationRegister
     return result;
 }
 
+std::string trim(std::string value) {
+    const auto first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) {
+        return {};
+    }
+    const auto last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+bool parseUnsigned(const std::string& value, unsigned long& result) {
+    try {
+        std::size_t consumed = 0;
+        result = std::stoul(value, &consumed, 10);
+        return consumed == value.size();
+    } catch (...) {
+        return false;
+    }
+}
+
 } // namespace
 
 const ModbusMappingDefinition& toyoRenogyMapping() noexcept {
@@ -84,6 +106,78 @@ const ModbusMappingDefinition& toyoRenogyMapping() noexcept {
         102,
     };
     return definition;
+}
+
+ModbusConnectionSettings defaultModbusConnectionSettings() noexcept {
+    return {
+        std::string(toyoRenogyMapping().host),
+        "255.255.255.0",
+        "192.168.10.1",
+        toyoRenogyMapping().port,
+        toyoRenogyMapping().unitId,
+    };
+}
+
+bool validModbusConnectionSettings(
+    const ModbusConnectionSettings& settings) noexcept {
+    in_addr address{};
+    if (::inet_pton(AF_INET, settings.host.c_str(), &address) != 1
+        || ::inet_pton(AF_INET, settings.subnet.c_str(), &address) != 1
+        || ::inet_pton(AF_INET, settings.gateway.c_str(), &address) != 1) {
+        return false;
+    }
+    return settings.port != 0 && settings.unitId <= 247;
+}
+
+bool loadModbusConnectionSettings(
+    const std::string& path,
+    ModbusConnectionSettings& settings) {
+    std::ifstream file(path);
+    if (!file) {
+        return false;
+    }
+
+    auto updated = settings;
+    std::string line;
+    while (std::getline(file, line)) {
+        line = trim(line);
+        if (line.empty() || line.front() == '#') {
+            continue;
+        }
+        const auto separator = line.find('=');
+        if (separator == std::string::npos) {
+            return false;
+        }
+        const auto key = trim(line.substr(0, separator));
+        const auto value = trim(line.substr(separator + 1));
+        if (key == "host") {
+            updated.host = value;
+        } else if (key == "subnet") {
+            updated.subnet = value;
+        } else if (key == "gateway") {
+            updated.gateway = value;
+        } else if (key == "port") {
+            unsigned long parsed = 0;
+            if (!parseUnsigned(value, parsed) || parsed > 0xFFFFUL) {
+                return false;
+            }
+            updated.port = static_cast<std::uint16_t>(parsed);
+        } else if (key == "unit_id") {
+            unsigned long parsed = 0;
+            if (!parseUnsigned(value, parsed) || parsed > 0xFFUL) {
+                return false;
+            }
+            updated.unitId = static_cast<std::uint8_t>(parsed);
+        } else {
+            return false;
+        }
+    }
+
+    if (!validModbusConnectionSettings(updated)) {
+        return false;
+    }
+    settings = std::move(updated);
+    return true;
 }
 
 const ModbusMappingDefinition& mappingDefinition(ModbusMappingId id) noexcept {
@@ -170,7 +264,13 @@ MpptReadOnlyData decodeToyoRenogy(
 }
 
 OptaModbusTcpClient::OptaModbusTcpClient(ModbusMappingId mapping)
-    : mapping_(mappingDefinition(mapping)) {}
+    : OptaModbusTcpClient(mapping, defaultModbusConnectionSettings()) {}
+
+OptaModbusTcpClient::OptaModbusTcpClient(
+    ModbusMappingId mapping,
+    ModbusConnectionSettings connection)
+    : mapping_(mappingDefinition(mapping)),
+      connection_(std::move(connection)) {}
 
 OptaModbusTcpClient::~OptaModbusTcpClient() {
     stop();
@@ -196,9 +296,9 @@ bool OptaModbusTcpClient::connectSocket() {
 
     sockaddr_in address{};
     address.sin_family = AF_INET;
-    address.sin_port = htons(mapping_.port);
+    address.sin_port = htons(connection_.port);
 
-    const std::string host(mapping_.host);
+    const std::string host(connection_.host);
     if (::inet_pton(AF_INET, host.c_str(), &address.sin_addr) != 1) {
         addrinfo hints{};
         hints.ai_family = AF_INET;
@@ -213,8 +313,55 @@ bool OptaModbusTcpClient::connectSocket() {
         ::freeaddrinfo(resolved);
     }
 
-    if (::connect(socket_, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) != 0) {
+    const auto originalFlags = ::fcntl(socket_, F_GETFL, 0);
+    if (originalFlags < 0 || ::fcntl(socket_, F_SETFL, originalFlags | O_NONBLOCK) != 0) {
+        setError(std::string("Modbus TCP socket setup failed: ") + std::strerror(errno));
+        closeSocket();
+        return false;
+    }
+
+    const auto connectResult = ::connect(
+        socket_,
+        reinterpret_cast<const sockaddr*>(&address),
+        sizeof(address));
+    if (connectResult != 0 && errno != EINPROGRESS) {
         setError(std::string("Modbus TCP connect failed: ") + std::strerror(errno));
+        closeSocket();
+        return false;
+    }
+    if (connectResult != 0) {
+        fd_set writable;
+        FD_ZERO(&writable);
+        FD_SET(socket_, &writable);
+        timeval connectTimeout{
+            socketTimeoutMilliseconds / 1000,
+            (socketTimeoutMilliseconds % 1000) * 1000,
+        };
+        const auto ready = ::select(socket_ + 1, nullptr, &writable, nullptr, &connectTimeout);
+        if (ready <= 0) {
+            setError(ready == 0
+                ? "Modbus TCP connect timed out"
+                : std::string("Modbus TCP connect wait failed: ") + std::strerror(errno));
+            closeSocket();
+            return false;
+        }
+        int socketError = 0;
+        socklen_t socketErrorLength = sizeof(socketError);
+        if (::getsockopt(
+                socket_,
+                SOL_SOCKET,
+                SO_ERROR,
+                &socketError,
+                &socketErrorLength) != 0
+            || socketError != 0) {
+            setError(std::string("Modbus TCP connect failed: ")
+                     + std::strerror(socketError != 0 ? socketError : errno));
+            closeSocket();
+            return false;
+        }
+    }
+    if (::fcntl(socket_, F_SETFL, originalFlags) != 0) {
+        setError(std::string("Modbus TCP socket restore failed: ") + std::strerror(errno));
         closeSocket();
         return false;
     }
@@ -273,7 +420,7 @@ bool OptaModbusTcpClient::readInputRegisters(
     writeU16(request.data(), transaction);
     writeU16(request.data() + 2, 0);
     writeU16(request.data() + 4, 6);
-    request[6] = mapping_.unitId;
+    request[6] = connection_.unitId;
     request[7] = 0x04; // Read input registers.
     writeU16(request.data() + 8, start);
     writeU16(request.data() + 10, count);
@@ -300,7 +447,7 @@ bool OptaModbusTcpClient::readInputRegisters(
     if (!readExact(pdu.data(), pduSize)) {
         return false;
     }
-    if (header[6] != mapping_.unitId || pdu[0] != 0x04 || pdu[1] != count * 2) {
+    if (header[6] != connection_.unitId || pdu[0] != 0x04 || pdu[1] != count * 2) {
         setError("Invalid Modbus TCP input-register response");
         closeSocket();
         return false;
@@ -324,7 +471,7 @@ bool OptaModbusTcpClient::writeHoldingRegisters(
     writeU16(request.data(), transaction);
     writeU16(request.data() + 2, 0);
     writeU16(request.data() + 4, 13);
-    request[6] = mapping_.unitId;
+    request[6] = connection_.unitId;
     request[7] = 0x10; // Write multiple holding registers.
     writeU16(request.data() + 8, start);
     writeU16(request.data() + 10, static_cast<std::uint16_t>(values.size()));
@@ -355,7 +502,7 @@ bool OptaModbusTcpClient::writeHoldingRegisters(
     if (!readExact(pdu.data(), pduSize)) {
         return false;
     }
-    if (header[6] != mapping_.unitId || pdu[0] != 0x10
+    if (header[6] != connection_.unitId || pdu[0] != 0x10
         || readU16(pdu.data() + 1) != start
         || readU16(pdu.data() + 3) != values.size()) {
         setError("Invalid Modbus TCP holding-register response");

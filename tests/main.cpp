@@ -6,6 +6,7 @@ void runSwitchingControllerTests();
 void runIslandInverterProtectionTests();
 void runMqttContractTests();
 void runOptaModbusTcpTests();
+void runTelemetryHistoryStoreTests();
 
 int main() {
     runBatteryMonitorTests();
@@ -14,6 +15,7 @@ int main() {
     runIslandInverterProtectionTests();
     runMqttContractTests();
     runOptaModbusTcpTests();
+    runTelemetryHistoryStoreTests();
     std::cout << "All solar-core tests passed\n";
     return 0;
 }

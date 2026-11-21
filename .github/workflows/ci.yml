@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main, v2]
   pull_request:
 
 permissions:
@@ -25,7 +23,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools
+          sudo apt-get install --yes libsqlite3-dev libqt6sql6-sqlite qt6-base-dev qt6-declarative-dev qt6-declarative-dev-tools
 
       - name: Install Qt on macOS
         if: runner.os == 'macOS'

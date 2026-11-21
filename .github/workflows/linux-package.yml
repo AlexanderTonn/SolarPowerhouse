@@ -1,21 +1,32 @@
-name: Linux package
+name: Debian package
 
 on:
   workflow_dispatch:
-  push:
-    tags: ['v*']
 
 permissions:
   contents: read
 
+concurrency:
+  group: solarpowerhouse-debian-package
+  cancel-in-progress: true
+
 jobs:
   package:
-    name: Build Linux deployment package
+    name: Build Debian .deb
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # For a manual run, resolve the selected branch at job start so the
+          # package represents its current/latest commit.
+          ref: ${{ github.ref_name }}
+          fetch-depth: 1
+
+      - name: Record built commit
+        id: revision
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Install build dependencies
         run: |
@@ -24,34 +35,29 @@ jobs:
             cmake \
             ninja-build \
             g++ \
+            pkg-config \
+            dpkg-dev \
+            libsqlite3-dev \
             qt6-base-dev \
             qt6-declarative-dev \
-            qt6-declarative-dev-tools
+            qt6-declarative-dev-tools \
+            libqt6sql6-sqlite
 
-      - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Build Debian package
+        run: ./deploy/build-debian-package.sh --output-dir dist
 
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-
-      - name: Install to staging directory
-        run: cmake --install build --prefix "$PWD/stage"
-
-      - name: Add deployment metadata
+      - name: Validate Debian package
         run: |
-          mkdir -p stage/share/solarpowerhouse
-          cp README.md LICENSE stage/share/solarpowerhouse/
-          cp -R docs stage/share/solarpowerhouse/
+          package=$(find dist -maxdepth 1 -type f -name '*.deb' -print -quit)
+          test -n "$package"
+          dpkg-deb --info "$package"
+          dpkg-deb --contents "$package" | grep -F '/usr/bin/solar-core'
+          dpkg-deb --contents "$package" | grep -F '/usr/bin/solar-hmi'
+          dpkg-deb --contents "$package" | grep -F '/usr/lib/systemd/system/solar-powerhouse.target'
 
-      - name: Create package
-        run: tar -czf "solarpowerhouse-linux-${GITHUB_SHA}.tar.gz" -C stage .
-
-      - name: Upload deployment artifact
+      - name: Upload Debian package artifact
         uses: actions/upload-artifact@v4
         with:
-          name: solarpowerhouse-linux-${{ github.sha }}
-          path: solarpowerhouse-linux-${{ github.sha }}.tar.gz
+          name: solarpowerhouse-debian-${{ steps.revision.outputs.sha }}
+          path: dist/*.deb
           if-no-files-found: error

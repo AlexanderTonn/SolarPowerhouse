@@ -10,8 +10,8 @@ Item {
     property string softwareVersion: ""
     property string operatingMode: "AUTO"
     property string manualTarget: "MPPT"
-    property string lowThreshold: ""
-    property string highThreshold: ""
+    property string chargeBelowVoltage: ""
+    property string batteryFullAboveVoltage: ""
     property string islandCutoffVoltage: ""
     property string islandEnableVoltage: ""
     property string confirmationTime: "30"
@@ -27,8 +27,8 @@ Item {
     signal backRequested()
     signal menuRequested()
 
-    property bool thresholdOrderValid: lowThreshold === "" || highThreshold === ""
-        || Number(lowThreshold) < Number(highThreshold)
+    property bool thresholdOrderValid: chargeBelowVoltage === "" || batteryFullAboveVoltage === ""
+        || Number(chargeBelowVoltage) < Number(batteryFullAboveVoltage)
     property bool islandProtectionOrderValid: islandCutoffVoltage === "" || islandEnableVoltage === ""
         || Number(islandCutoffVoltage) < Number(islandEnableVoltage)
 
@@ -44,8 +44,8 @@ Item {
 
     function acceptEditor(value) {
         var changedField = activeField
-        if (activeField === "low") lowThreshold = value
-        if (activeField === "high") highThreshold = value
+        if (activeField === "chargeBelow") chargeBelowVoltage = value
+        if (activeField === "batteryFullAbove") batteryFullAboveVoltage = value
         if (activeField === "islandCutoff") islandCutoffVoltage = value
         if (activeField === "islandEnable") islandEnableVoltage = value
         if (activeField === "confirmation") confirmationTime = value
@@ -101,6 +101,7 @@ Item {
     Rectangle { anchors.fill: parent; color: "#101317" }
 
     AppHeader {
+        id: header
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
@@ -116,8 +117,7 @@ Item {
     }
 
     Flickable {
-        anchors.top: parent.top
-        anchors.topMargin: 98
+        anchors.top: header.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -165,20 +165,20 @@ Item {
                     Text { text: page.localization.text("settings.switching"); color: "#f2f4f7"; font.pixelSize: 20; font.bold: true }
                     TouchInputField {
                         label: page.localization.text("settings.low.threshold")
-                        value: page.lowThreshold
+                        value: page.chargeBelowVoltage
                         placeholder: page.localization.text("settings.not.commissioned")
                         unit: "V"
                         valid: page.thresholdOrderValid
-                        onEditRequested: page.openEditor("low", page.localization.text("settings.low.threshold"), page.lowThreshold, "V", 0, 100, 1)
+                        onEditRequested: page.openEditor("chargeBelow", page.localization.text("settings.low.threshold"), page.chargeBelowVoltage, "V", 0, 100, 1)
                     }
                     TouchInputField {
                         label: page.localization.text("settings.high.threshold")
-                        value: page.highThreshold
+                        value: page.batteryFullAboveVoltage
                         placeholder: page.localization.text("settings.not.commissioned")
                         unit: "V"
                         valid: page.thresholdOrderValid
                         accentColor: "#5ca9e6"
-                        onEditRequested: page.openEditor("high", page.localization.text("settings.high.threshold"), page.highThreshold, "V", 0, 100, 1)
+                        onEditRequested: page.openEditor("batteryFullAbove", page.localization.text("settings.high.threshold"), page.batteryFullAboveVoltage, "V", 0, 100, 1)
                     }
                     TouchInputField {
                         label: page.localization.text("settings.confirmation.time")

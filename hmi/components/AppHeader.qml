@@ -2,6 +2,7 @@ import QtQuick
 
 Item {
     id: header
+    z: 100
     property string pageTitle: "SOLAR POWERHOUSE"
     property string softwareVersion: ""
     property bool showBack: false
@@ -12,7 +13,7 @@ Item {
     signal menuRequested()
     signal backRequested()
 
-    height: 72 + (header.activeAlarms && header.activeAlarms.count > 0 ? 64 : 0)
+    height: topBar.height + alarmBanner.height
 
     Rectangle {
         id: topBar
@@ -149,6 +150,7 @@ Item {
     }
 
     ActiveAlarmBanner {
+        id: alarmBanner
         anchors.top: topBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right

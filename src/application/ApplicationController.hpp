@@ -2,6 +2,8 @@
 
 #include "domain/EventManager.hpp"
 #include "infrastructure/OptaModbusTcp.hpp"
+#include "infrastructure/TelemetryHistoryStore.hpp"
+#include "infrastructure/TelemetryIpc.hpp"
 #include "shared/SolarTypes.hpp"
 
 #include <chrono>
@@ -12,6 +14,7 @@ namespace solar {
 class ApplicationController {
 public:
     ApplicationController();
+    ~ApplicationController();
 
     bool start();
     void tick();
@@ -25,14 +28,18 @@ public:
     [[nodiscard]] const EventManager& eventManager() const noexcept { return eventManager_; }
 
 private:
-    void publishTelemetryState() const;
+    void publishTelemetryState();
 
     SolarSettings settings_{};
     EventManager eventManager_{};
     infrastructure::ModbusMappingId mapping_;
     infrastructure::OptaModbusTcpClient modbusClient_;
+    infrastructure::TelemetryHistoryStore historyStore_;
+    infrastructure::TelemetryIpcServer telemetryIpc_;
     infrastructure::OptaTelemetry telemetry_{};
     std::chrono::steady_clock::time_point lastPoll_{};
+    std::chrono::steady_clock::time_point lastHistorySampleAt_{};
+    std::chrono::steady_clock::time_point lastHistoryFlushAt_{};
     bool running_{false};
 };
 

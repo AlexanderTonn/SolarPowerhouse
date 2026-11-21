@@ -36,7 +36,8 @@ std::optional<PhysicalState> BatteryMonitor::evaluateAutomaticTarget(
     }
 
     const double voltage = latest_->voltage;
-    if (voltage <= *settings.voltageLow) {
+    // Battery below charge threshold: route PV to MPPT and charge battery.
+    if (voltage <= *settings.chargeBelowVoltage) {
         aboveHighSince_.reset();
         if (!belowLowSince_.has_value()) {
             belowLowSince_ = now;
@@ -48,7 +49,9 @@ std::optional<PhysicalState> BatteryMonitor::evaluateAutomaticTarget(
         return std::nullopt;
     }
 
-    if (voltage >= *settings.voltageHigh) {
+    // Battery above full threshold: battery is considered full; route to
+    // microinverter so charging stops.
+    if (voltage >= *settings.batteryFullAboveVoltage) {
         belowLowSince_.reset();
         if (!aboveHighSince_.has_value()) {
             aboveHighSince_ = now;

@@ -14,8 +14,8 @@ void runBatteryMonitorTests() {
 
     const auto start = Clock::time_point{};
     SolarSettings settings;
-    settings.voltageLow = 26.0;
-    settings.voltageHigh = 28.0;
+    settings.chargeBelowVoltage = 26.0;
+    settings.batteryFullAboveVoltage = 28.0;
     settings.voltageConfirmTime = 30s;
 
     BatteryMonitor monitor;
@@ -33,11 +33,11 @@ void runBatteryMonitorTests() {
     REQUIRE(monitor.evaluateAutomaticTarget(PhysicalState::MpptActive, settings, start + 61s)
             == PhysicalState::MicroinverterActive);
 
-    settings.voltageLow = 29.0;
+    settings.chargeBelowVoltage = 29.0;
     REQUIRE(!monitor.evaluateAutomaticTarget(PhysicalState::MpptActive, settings, start + 62s));
 
-    settings.voltageLow = 26.0;
-    settings.voltageHigh = 28.0;
+    settings.chargeBelowVoltage = 26.0;
+    settings.batteryFullAboveVoltage = 28.0;
     settings.minimumModeDuration = 300s;
     EnergyManager manager(monitor);
     manager.recordStableState(PhysicalState::MpptActive, start);

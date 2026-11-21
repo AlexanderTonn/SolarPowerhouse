@@ -2,10 +2,6 @@ name: Opta firmware
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "firmware/opta-mppt-gateway/**"
-      - ".github/workflows/opta-firmware.yml"
   pull_request:
     paths:
       - "firmware/opta-mppt-gateway/**"

@@ -4,11 +4,41 @@
 
 #include <array>
 #include <cmath>
+#include <filesystem>
+#include <fstream>
 
 void runOptaModbusTcpTests() {
     using solar::infrastructure::MpptRegisterCount;
     using solar::infrastructure::SystemInformationRegisterCount;
     using solar::infrastructure::decodeToyoRenogy;
+
+    const auto configPath = std::filesystem::temp_directory_path()
+        / "solarpowerhouse-modbus-connection-test.conf";
+    std::error_code filesystemError;
+    std::filesystem::remove(configPath, filesystemError);
+    {
+        std::ofstream config(configPath);
+        config << "host=10.20.30.40\n"
+                  "subnet=255.255.255.0\n"
+                  "gateway=10.20.30.1\n"
+                  "port=1502\n"
+                  "unit_id=7\n";
+    }
+    auto connection = solar::infrastructure::defaultModbusConnectionSettings();
+    REQUIRE(solar::infrastructure::loadModbusConnectionSettings(
+        configPath.string(), connection));
+    REQUIRE(connection.host == "10.20.30.40");
+    REQUIRE(connection.subnet == "255.255.255.0");
+    REQUIRE(connection.gateway == "10.20.30.1");
+    REQUIRE(connection.port == 1502);
+    REQUIRE(connection.unitId == 7);
+    REQUIRE(solar::infrastructure::validModbusConnectionSettings(connection));
+    solar::infrastructure::OptaModbusTcpClient configuredClient(
+        solar::infrastructure::ModbusMappingId::ToyoRenogy,
+        connection);
+    REQUIRE(configuredClient.connection().host == "10.20.30.40");
+    REQUIRE(configuredClient.connection().unitId == 7);
+    std::filesystem::remove(configPath, filesystemError);
 
     std::array<std::uint16_t, SystemInformationRegisterCount> systemInformation{};
     systemInformation[0] = 0x182D; // 24 V, 45 A charging
